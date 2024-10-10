@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using TreeEditor;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GridGenerator : MonoBehaviour
@@ -52,18 +49,150 @@ public class GridGenerator : MonoBehaviour
 
     private float deltaTime;
 
+    private Terrain Land{get; set;}
+    private Terrain Water{get; set;}
+
     
     void Start()
     {
         //GenerateLandscapeAsTiles();
+        Land = new Terrain("Land", X, Y, false);
+        Water = new Terrain("Water", X, Y, true);
 
-        water = new GameObject($"Water");
-        land = new GameObject($"Land");
-
-        InvokeRepeating("GenerateLandscapeAsSingleMesh", 1.0f, 1.0f);
+        InvokeRepeating("UpdateLand", 1.0f, 1.0f);
         
+
     }
 
+    /// <summary>
+    /// Updates the land terrain
+    /// </summary>
+    private void UpdateLand(){
+        GenerateTerrain(Land, MinHeight, MaxHeight, deltaTime, AddLandDetails);
+    }
+
+    /// <summary>
+    /// Updates the water terrain
+    /// </summary>
+    private void UpdateWater(){
+        GenerateTerrain(Water, WaterMinHeight, WaterMaxHeight, deltaTime, AddWaterDetails);
+    }
+
+    /// <summary>
+    /// Takes a terrain and applies noise to generate details for water meshes
+    /// </summary>
+    /// <param name="terrain">A terrain containing water meshes</param>
+    /// <param name="noise">Some generated noise</param>
+    /// <param name="bottomLeft">bottom left vertex of a quad</param>
+    /// <param name="bottomRight">bottom right vertex of a quad</param>
+    /// <param name="topLeft">top left vertex of a quad</param>
+    /// <param name="topRight">top right vertex of a quad</param>
+    private void AddWaterDetails(Terrain terrain, float noise, Vector3 bottomLeft, Vector3 bottomRight, Vector3 topLeft, Vector3 topRight){
+        float colorValue = Mathf.Lerp(0.2f, 1.0f, noise);
+        Color color = new Color(0, 0, colorValue); // blue level
+        terrain.ColorList.Add(color);
+        terrain.ColorList.Add(color);
+        terrain.ColorList.Add(color);
+        terrain.ColorList.Add(color);
+    }
+
+    /// <summary>
+    /// Takes a terrain and applies noise to generate details for land meshes
+    /// </summary>
+    /// <param name="terrain">A terrain containing water meshes</param>
+    /// <param name="noise">Some generated noise</param>
+    /// <param name="bottomLeft">bottom left vertex of a quad</param>
+    /// <param name="bottomRight">bottom right vertex of a quad</param>
+    /// <param name="topLeft">top left vertex of a quad</param>
+    /// <param name="topRight">top right vertex of a quad</param>
+    private void AddLandDetails(Terrain terrain, float noise, Vector3 bottomLeft, Vector3 bottomRight, Vector3 topLeft, Vector3 topRight){
+        Color black = new Color(0.1f, 0.1f, 0.1f);
+        Color white = new Color(1.0f, 1.0f, 1.0f);
+        Color brown = new Color(0.24f, 0.132f, 0.173f);
+        Color green = new Color(0.146f, 0.610f, 0.239f);
+        Color baseColor = black;
+        Color endColor = white;
+        if(noise <= 0.2f) endColor = brown;
+        else if(noise <= 0.8f) {
+            endColor = green;
+            baseColor = brown;
+        }
+        else{
+            endColor = white;
+            baseColor = green;
+        }
+
+        Color bottomLeftColor = Color.Lerp(baseColor, endColor, bottomLeft.y);
+        Color bottomRightColor = Color.Lerp(baseColor, endColor, bottomRight.y);
+        Color topRightColor = Color.Lerp(baseColor, endColor, topRight.y);
+        Color topLeftColor = Color.Lerp(baseColor, endColor, topLeft.y);
+
+        terrain.ColorList.Add(bottomLeftColor);
+        terrain.ColorList.Add(topLeftColor);
+        terrain.ColorList.Add(bottomRightColor);
+        terrain.ColorList.Add(topRightColor);
+    }
+
+    /// <summary>
+    /// Takes a terrain and applies noise to generate details for a mesh, augmented by the given callback function
+    /// </summary>
+    /// <param name="terrain">A terrain of any type</param>
+    /// <param name="minHeight">The minimum vertex Y coordinate allowed in mesh</param>
+    /// <param name="maxHeight">The maximum vertex Y coordinate allowed in mesh</param>
+    /// <param name="deltaTime">The deltaTime since last generation. Note: each terrain dictates whether it uses the deltaTime to generate its meshes</param>
+    /// <param name="callback">A callback function that contains rules to apply to each quad of a mesh. E.g. if making water we might decide to set color to blue using this callback</param>
+    private void GenerateTerrain(Terrain terrain, float minHeight, float maxHeight, float deltaTime, System.Action<Terrain, float, Vector3, Vector3, Vector3, Vector3> callback)
+    {
+
+        terrain.Clear();
+
+        // generate terrain vertices
+        if(terrain.UseDeltaTime) terrain.Vertices = GenerateVerticesWithTime(minHeight, maxHeight, deltaTime);
+        else terrain.Vertices = GenerateVerticesWithTime(minHeight, maxHeight, 0);
+        
+        terrain.Vertices = SmoothVertexGrid(terrain.Vertices);
+
+        // Loop over our vertices to build our triangle and vertex list
+        for(int i = 0; i < X; i++){
+            for(int j = 0; j < Y; j++){
+                Vector3 bottomLeft = terrain.Vertices[i, j];
+                Vector3 topLeft = terrain.Vertices[i, j + 1];
+                Vector3 bottomRight = terrain.Vertices[i + 1, j];
+                Vector3 topRight = terrain.Vertices[i + 1, j + 1];
+
+                // Add vertices to the vertex list
+                int vertexIndex = terrain.VertexList.Count;
+                terrain.VertexList.Add(bottomLeft);
+                terrain.VertexList.Add(topLeft);
+                terrain.VertexList.Add(bottomRight);
+                terrain.VertexList.Add(topRight);
+
+                // Add triangles for the two triangles of the quad
+                terrain.TriangleList.Add(vertexIndex);
+                terrain.TriangleList.Add(vertexIndex + 1);
+                terrain.TriangleList.Add(vertexIndex + 2);
+                terrain.TriangleList.Add(vertexIndex + 1);
+                terrain.TriangleList.Add(vertexIndex + 3);
+                terrain.TriangleList.Add(vertexIndex + 2);
+
+                // Generate our random noise. Note: we might consider moving this calculation inside our terrain
+                float perlinNoise;
+                if(!terrain.UseDeltaTime) perlinNoise = Mathf.PerlinNoise((float)((i + PerlinSeed) * PerlinScale ), (float) ((j + PerlinSeed)* PerlinScale));
+                else perlinNoise = Mathf.PerlinNoise((float)((i + PerlinSeed) * PerlinScale + deltaTime), (float) ((j + PerlinSeed)* PerlinScale + deltaTime));
+                
+                // Apply our rules to the terrain using our given callback function
+                callback(terrain, perlinNoise, bottomLeft, bottomRight, topLeft, topRight);
+                
+            }
+        }
+        // Set our terrain to use the above generated content
+        terrain.Refresh();
+
+    }
+
+    /// <summary>
+    /// Generates our landscape as a single mesh. Note: This is here 
+    /// </summary>
     private void GenerateLandscapeAsSingleMesh()
     {
         landVertices = GenerateVerticesWithTime(MinHeight, MaxHeight, 0);
@@ -145,6 +274,10 @@ public class GridGenerator : MonoBehaviour
         //landMeshRenderer.material.mainTexture = GeneratePerlinTexture(256, 256);   //applying to whole mesh, need to change to work with just the vertexes
 
     }
+
+    /// <summary>
+    /// Generates our water as a single mesh and applies 
+    /// </summary>
     private void GenerateWater()
     {
         waterVertices = GenerateVerticesWithTime(WaterMinHeight, WaterMaxHeight, deltaTime);
@@ -238,6 +371,7 @@ public class GridGenerator : MonoBehaviour
         return tex;
     }
 
+    // Chatgpt vertex smoothing
     private Vector3[,] SmoothVertexGrid(Vector3[,] vertices)
     {
         Vector3[,] smoothedVertices = new Vector3[X + 1, Y + 1];
@@ -284,6 +418,9 @@ public class GridGenerator : MonoBehaviour
         return smoothedVertices;
     }
 
+    /// <summary>
+    /// Generates landscapes as individual game objects. Allows for selection but is infinitely slow.
+    /// </summary>
     private void GenerateLandscapeAsTiles(){
         Vector3[,] vertices = GenerateVertices(MinHeight, MaxHeight);
 
@@ -312,6 +449,8 @@ public class GridGenerator : MonoBehaviour
     /// <summary>
     /// Creates a number of vertices equal to the grid size required.
     /// </summary>
+    /// <param name="maxHeight">Maximum Y coordinate height of mesh</param>
+    /// <param name="minHeight">Minimum Y coordinate height of mesh</param>
     /// <returns>A 2d array containing the vertices</returns>
     private Vector3[,] GenerateVertices(float minHeight, float maxHeight){
         Vector3[,] vertices = new Vector3[X + 1, Y + 1];
@@ -325,6 +464,13 @@ public class GridGenerator : MonoBehaviour
         return vertices;
     }
 
+    /// <summary>
+    /// Creates a number of vertices equal to the grid size required using time as an offset to our noise generation.
+    /// </summary>
+    /// <param name="minHeight">Minimum Y coordinate height of mesh</param>
+    /// <param name="maxHeight">Maximum Y coordinate height of mesh</param>
+    /// <param name="time"></param>
+    /// <returns></returns>
     private Vector3[,] GenerateVerticesWithTime(float minHeight, float maxHeight, float time){
         Vector3[,] vertices = new Vector3[X + 1, Y + 1];
         for(int i = 0; i <= X; i++){
@@ -371,10 +517,12 @@ public class GridGenerator : MonoBehaviour
         return mesh;
     }
 
-
+    /// <summary>
+    /// Updates our water and deltaTime.
+    /// </summary>
     public void Update(){
         deltaTime += Time.deltaTime * WaterSpeed;
-        GenerateWater();
+        UpdateWater();
         
     }
 
