@@ -55,13 +55,10 @@ public class GridGenerator : MonoBehaviour
     
     void Start()
     {
-        //GenerateLandscapeAsTiles();
         Land = new Terrain("Land", X, Y, false);
         Water = new Terrain("Water", X, Y, true);
 
         InvokeRepeating("UpdateLand", 1.0f, 1.0f);
-        
-
     }
 
     /// <summary>

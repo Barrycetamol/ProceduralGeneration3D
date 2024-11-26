@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -88,7 +90,6 @@ public class Terrain{
         Mesh.RecalculateNormals();
 
         MeshFilter.mesh = Mesh;
-
     }
 
     /// <summary>
@@ -107,5 +108,43 @@ public class Terrain{
     public void ClearMesh(){
         Mesh = new Mesh();
         Clear();
+    }
+
+    public void SetVertices(Vector3[,] vertices){
+        Vertices = vertices;
+        CreateTriangles();
+    }
+
+    public void SetColors(List<Color> colors){
+        ColorList = colors;
+    }
+
+
+    private void CreateTriangles(){
+
+        for(int i = 0; i < Vertices.GetLength(1) - 1; i++){
+            for(int j = 0; j < Vertices.GetLength(0) - 1; j++){
+
+                Vector3 bottomLeft = Vertices[i, j];
+                Vector3 topLeft = Vertices[i, j + 1];
+                Vector3 bottomRight = Vertices[i + 1, j];
+                Vector3 topRight = Vertices[i + 1, j + 1];
+
+                // Add vertices to the vertex list
+                int vertexIndex = VertexList.Count;
+                VertexList.Add(bottomLeft);
+                VertexList.Add(topLeft);
+                VertexList.Add(bottomRight);
+                VertexList.Add(topRight);
+
+                // Add triangles for the two triangles of the quad
+                TriangleList.Add(vertexIndex);
+                TriangleList.Add(vertexIndex + 1);
+                TriangleList.Add(vertexIndex + 2);
+                TriangleList.Add(vertexIndex + 1);
+                TriangleList.Add(vertexIndex + 3);
+                TriangleList.Add(vertexIndex + 2);
+            }
+        }
     }
 }
