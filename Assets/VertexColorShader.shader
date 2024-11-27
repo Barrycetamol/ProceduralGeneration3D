@@ -19,7 +19,7 @@ Shader "Custom/VertexColorShader" {
 
             struct v2f {
                 float4 pos : SV_POSITION;
-                float4 color : COLOR; // Vertex color passed to fragment
+                nointerpolation float4 color : COLOR; // Vertex color passed to fragment
             };
 
             v2f vert (appdata v) {

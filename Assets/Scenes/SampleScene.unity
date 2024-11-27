@@ -826,8 +826,8 @@ GameObject:
   - component: {fileID: 1448100360}
   - component: {fileID: 1448100363}
   - component: {fileID: 1448100362}
-  - component: {fileID: 1448100365}
   - component: {fileID: 1448100364}
+  - component: {fileID: 1448100365}
   m_Layer: 0
   m_Name: Plane
   m_TagString: Untagged
@@ -938,13 +938,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1448100358}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 379f25426c9b27f4c9342107aa20d0b7, type: 3}
+  m_Script: {fileID: 11500000, guid: e20cc2f95b2939b45b0140f47fe2e329, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   <Seed>k__BackingField: 0
   <NoiseSampleSize>k__BackingField: {x: 128, y: 128}
-  <Mean>k__BackingField: 0.5
-  <StandardDeviation>k__BackingField: 0.3
+  <Scale>k__BackingField: 0
+  <XOffset>k__BackingField: 0
+  <YOffset>k__BackingField: 0
+  <Octaves>k__BackingField: 0
+  <Lacunarity>k__BackingField: 0
+  <Persistance>k__BackingField: 0
 --- !u!1 &1792898936
 GameObject:
   m_ObjectHideFlags: 0
@@ -954,9 +958,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1792898940}
-  - component: {fileID: 1792898943}
   - component: {fileID: 1792898944}
   - component: {fileID: 1792898946}
+  - component: {fileID: 1792898947}
   m_Layer: 0
   m_Name: NewFloor
   m_TagString: Untagged
@@ -979,22 +983,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1792898943
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1792898936}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 379f25426c9b27f4c9342107aa20d0b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <Seed>k__BackingField: 0
-  <NoiseSampleSize>k__BackingField: {x: 256, y: 256}
-  <Mean>k__BackingField: 0.25
-  <StandardDeviation>k__BackingField: 0.5
 --- !u!114 &1792898944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1032,6 +1020,26 @@ MonoBehaviour:
   MaximumHeight: 1
   MinimumHeight: -1
   AutoUpdate: 0
+--- !u!114 &1792898947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792898936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e20cc2f95b2939b45b0140f47fe2e329, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Seed>k__BackingField: 0
+  <NoiseSampleSize>k__BackingField: {x: 128, y: 128}
+  <Scale>k__BackingField: 0
+  <XOffset>k__BackingField: 0
+  <YOffset>k__BackingField: 0
+  <Octaves>k__BackingField: 0
+  <Lacunarity>k__BackingField: 0
+  <Persistance>k__BackingField: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

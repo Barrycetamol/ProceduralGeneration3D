@@ -1,7 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 
 public class TerrainGenerator : MonoBehaviour
@@ -9,6 +8,8 @@ public class TerrainGenerator : MonoBehaviour
     [field: SerializeField] public Vector2Int Size { get; set; }
     [field: SerializeField] public float MaximumHeight;
     [field: SerializeField] public float MinimumHeight;
+    [field: SerializeField] public float MeshHeightMultiplyer;
+    [field: SerializeField] public AnimationCurve MeshHeightCurve;
 
     [field: SerializeField] public bool AutoUpdate;
 
@@ -23,6 +24,9 @@ public class TerrainGenerator : MonoBehaviour
     {
         NoiseGenerator = GetComponent<NoiseGenerator>();
         ColorTextureRenderer = GetComponent<ColorTextureRenderer>();
+
+        // Clamp for min size.
+        Size = new Vector2Int(Math.Clamp(Size.x, 1, 128), Math.Clamp(Size.y, 1, 128));
 
         Land = new Terrain("Land", Size.x, Size.y, false);
         if (NoiseGenerator != null){
@@ -49,12 +53,12 @@ public class TerrainGenerator : MonoBehaviour
     private void GenerateTerrain(Terrain terrain)
     {
         terrain.Clear();
-        terrain.SetVertices(GenerateVertices(MinimumHeight, MaximumHeight));
+        terrain.SetVertices(GenerateVertices(MinimumHeight, MaximumHeight, MeshHeightCurve, MeshHeightMultiplyer));
         terrain.SetColors(GetColors(terrain.Vertices));
         terrain.Refresh();
     }
 
-    private Vector3[,] GenerateVertices(float minHeight, float maxHeight)
+    private Vector3[,] GenerateVertices(float minHeight, float maxHeight, AnimationCurve height, float heightMultiplier)
     {
         Vector3[,] vertices = new Vector3[Size.x + 1, Size.y + 1];
         for (int i = 0; i <= Size.x; i++)
@@ -62,7 +66,8 @@ public class TerrainGenerator : MonoBehaviour
             for (int j = 0; j <= Size.y; j++)
             {
                 float noiseSample = NoiseGenerator.GetNoiseSample(i, j);
-                vertices[i, j] = new Vector3(i, Mathf.Lerp(minHeight, maxHeight, noiseSample), j);
+                //vertices[i, j] = new Vector3(i, Mathf.Lerp(minHeight, maxHeight, noiseSample), j);   
+                vertices[i, j] = new Vector3(i, height.Evaluate(noiseSample) * heightMultiplier, j);
             }
         }
 

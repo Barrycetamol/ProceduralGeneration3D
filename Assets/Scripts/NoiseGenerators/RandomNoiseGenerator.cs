@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class RandomNoiseGenerator : NoiseGenerator
 {
-    public override void GenerateNoiseTexture(bool useDeltaTime)
+    public override void GenerateNoise(bool useDeltaTime)
     {
         pixels = new float[NoiseSampleSize.x * NoiseSampleSize.y];
         for (int i = 0; i < NoiseSampleSize.x; i++)

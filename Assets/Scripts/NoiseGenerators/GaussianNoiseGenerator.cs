@@ -11,6 +11,8 @@ public class GuassianNoiseGenerator : NoiseGenerator
     private double spare = 0;
     public override void GenerateNoise(bool useDeltaTime)
     {
+        float timeOffset = 1;
+        if(useDeltaTime) timeOffset = timePassed;
         pixels = new float[NoiseSampleSize.x * NoiseSampleSize.y];
         UnityEngine.Random.InitState(Seed);
         for (int i = 0; i < NoiseSampleSize.x; i++)
@@ -18,8 +20,8 @@ public class GuassianNoiseGenerator : NoiseGenerator
             for (int j = 0; j < NoiseSampleSize.y; j++)
             {
                 float sample = (float) GenerationGuassian();  // casting here may cause artifacts
-                if(useDeltaTime) pixels[i * NoiseSampleSize.y + j] = sample * timeOffset;
-                else pixels[i * NoiseSampleSize.y + j] = sample;
+                pixels[i * NoiseSampleSize.y + j] = sample * timeOffset;
+
             }
         }
         Debug.Log($"Finished generting guassian noise");
