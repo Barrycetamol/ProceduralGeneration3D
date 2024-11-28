@@ -71,7 +71,7 @@ public class Terrain{
         UseDeltaTime = useDeltaTime;
 
         m_Terrain = new GameObject(name);
-        m_Terrain.transform.position = new Vector3(GridPosition.x * GridSize.x, 0, GridPosition.y * GridSize.y);
+        m_Terrain.transform.position = new Vector3(GridPosition.x * (GridSize.x - 1), 0, GridPosition.y * (GridSize.y - 1));
 
         Mesh = new Mesh();
         MeshRenderer = m_Terrain.AddComponent<MeshRenderer>();

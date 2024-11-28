@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 
 [Serializable]
 public struct ColorBand{
@@ -48,7 +49,8 @@ public class ColorTextureRenderer  : MonoBehaviour{
         float prev_noise = 0;
         for(int i = 0; i < ColorBands.Count; i++){
             if(noiseSample <= ColorBands[i].threshold) {
-                returnColor = Mathf.Lerp(prev_noise, ColorBands[i].threshold, noiseSample) * ColorBands[i].color;
+                if(flat) returnColor = ColorBands[i].color;
+                else returnColor = Mathf.Lerp(prev_noise, ColorBands[i].threshold, noiseSample) * ColorBands[i].color;
                 break;
             }
         }

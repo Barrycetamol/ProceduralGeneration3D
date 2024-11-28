@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System.Linq;
 
 public class TerrainGenerator : MonoBehaviour
 {
@@ -11,9 +11,9 @@ public class TerrainGenerator : MonoBehaviour
     [field: SerializeField] public float MinimumHeight;
     [field: SerializeField] public float MeshHeightMultiplyer;
     [field: SerializeField] public AnimationCurve MeshHeightCurve;
-    [field: SerializeField] public AnimationCurve PeaksAndValleys;
-    [field: SerializeField] public AnimationCurve Erosion;
-    [field: SerializeField] public AnimationCurve Contentinentalness;
+    [field: SerializeField] public AnimationCurve PeaksAndValleysCurve;
+    [field: SerializeField] public AnimationCurve ErosionCurve;
+    [field: SerializeField] public AnimationCurve ContentinentalnessCurve;
 
     [field: SerializeField] public bool AutoUpdate;
 
@@ -51,7 +51,7 @@ public class TerrainGenerator : MonoBehaviour
     public void StartGenerating(){
         // ErosionNoise.GenerateNoise(false);
         // PeaksAndValleysNoise.GenerateNoise(false);
-    // ContinentalnessNoise.GenerateNoise(false);
+        // ContinentalnessNoise.GenerateNoise(false);
         foreach(Terrain terrain in Terrains){
             Debug.Log($"Clearing terrain {terrain.m_Terrain.name}");
             Destroy(terrain.m_Terrain);
@@ -71,25 +71,90 @@ public class TerrainGenerator : MonoBehaviour
     private void GenerateWorld()
     {
         ColorTextureRenderer.SortColorBands();
+
+        // Create noise maps for each terrain segment
+        Dictionary<string, NoiseMapInfo> noiseMaps = new Dictionary<string, NoiseMapInfo>();
+        float minimum = float.MinValue;
+        float maximum = float.MaxValue;
+        foreach(Terrain terrain in Terrains){
+            float[] noiseSamples = NoiseGenerator.GetNoiseSamples(terrain.GridPosition, terrain.GridSize, false);
+            noiseMaps[terrain.m_Terrain.name] = new NoiseMapInfo(noiseSamples, NoiseGenerator.minimumNoiseSample, NoiseGenerator.maximumNoiseSample);
+            
+            // get min/max values from our generated samples
+            if(noiseMaps[terrain.m_Terrain.name].minSample < minimum) minimum = noiseMaps[terrain.m_Terrain.name].minSample;
+            if(noiseMaps[terrain.m_Terrain.name].maxSample > maximum) maximum = noiseMaps[terrain.m_Terrain.name].maxSample;
+        }
+
+        float[] prev = new float[0];
+        string prev_name = "";
+        foreach(Terrain terrain in Terrains){
+            var a = noiseMaps[terrain.m_Terrain.name].noiseMap;
+            if(prev.Length >= 0){
+                if(prev.Length == a.Length && prev.SequenceEqual(a)){
+                    Debug.LogError($"Terrains were equal before normalization: {prev_name} {terrain.m_Terrain.name}");
+                }
+                else{
+                    prev = a;
+                    prev_name = terrain.m_Terrain.name;
+                }
+            }
+            else {
+                prev = noiseMaps[terrain.m_Terrain.name].noiseMap;
+                prev_name = terrain.m_Terrain.name;
+            }
+        }
+
+
+        // Normalize heights based on our min/maxes of each grid
+        foreach(Terrain terrain in Terrains){
+            noiseMaps[terrain.m_Terrain.name] = new NoiseMapInfo(
+                    NoiseGenerator.NormalizeSamples(
+                        noiseMaps[terrain.m_Terrain.name].noiseMap, 
+                        minimum, 
+                        maximum), 
+                    minimum, maximum
+            );
+        }
+
+        prev = new float[0];
+        prev_name = "";
+        foreach(Terrain terrain in Terrains){
+            var a = noiseMaps[terrain.m_Terrain.name].noiseMap;
+            if(prev.Length >= 0){
+                if(prev.Length == a.Length && prev.SequenceEqual(a)){
+                    Debug.LogError($"Terrains were equal after normalization: {prev_name} {terrain.m_Terrain.name}");
+                }
+                else{
+                    prev = a;
+                    prev_name = terrain.m_Terrain.name;
+                }
+            }
+            else {
+                prev = noiseMaps[terrain.m_Terrain.name].noiseMap;
+                prev_name = terrain.m_Terrain.name;
+            }
+        }
+
+
         foreach(Terrain terrain in Terrains){
             Debug.Log($"Staring terrain generation for: {terrain.m_Terrain.name}");
-            GenerateTerrain(terrain);
+            GenerateTerrain(terrain, noiseMaps[terrain.m_Terrain.name].noiseMap);
         }
  
     }
 
-    private void GenerateTerrain(Terrain terrain)
+    private void GenerateTerrain(Terrain terrain, float[] noiseSamples)
     {
         terrain.Clear();
-        terrain.SetVertices(GenerateVertices(terrain.GridPosition, terrain.GridSize, MeshHeightCurve, MeshHeightMultiplyer));
-        terrain.SetColors(GetColors(terrain.Vertices, terrain.GridPosition, terrain.GridSize, false));
+        terrain.SetVertices(GenerateVertices(terrain.GridPosition, terrain.GridSize, noiseSamples));
+        terrain.SetColors(GetColors(terrain.Vertices, terrain.GridPosition, terrain.GridSize, noiseSamples, false));
         terrain.Refresh();
     }
 
-    private Vector3[,] GenerateVertices(Vector2Int gridPosition, Vector2Int gridSize, AnimationCurve height, float heightMultiplier)
+    private Vector3[,] GenerateVertices(Vector2Int gridPosition, Vector2Int gridSize, float[] noiseSamples)
     {
         Vector3[,] vertices = new Vector3[gridSize.x, gridSize.y];
-        float[] noiseSamples = NoiseGenerator.GetNoiseSamples(gridPosition, gridSize, false);
+
         Debug.Log($"noiseSamples count: {noiseSamples.Length}. VerticesX {vertices.GetLength(0)}, {vertices.GetLength(1)}"); 
         for (int i = 0; i < gridSize.x; i++)
         {
@@ -97,8 +162,9 @@ public class TerrainGenerator : MonoBehaviour
             {
                 
                 //vertices[i, j] = new Vector3(i, Mathf.Lerp(minHeight, maxHeight, noiseSample), j);
-                float heightCalc = height.Evaluate(noiseSamples[i * gridSize.y + j]) * heightMultiplier;
-                float vertexResult = heightCalc;
+                float heightCalc = MeshHeightCurve.Evaluate(noiseSamples[i * gridSize.y + j]);
+                heightCalc -= ErosionCurve.Evaluate(noiseSamples[i * gridSize.y + j]);
+                float vertexResult = heightCalc  * MeshHeightMultiplyer;
                 vertices[i, j] = new Vector3(i, vertexResult, j);
             }
         }
@@ -106,9 +172,8 @@ public class TerrainGenerator : MonoBehaviour
         return vertices;
     }
 
-    private List<Color> GetColors(Vector3[,] Vertices, Vector2Int gridPosition, Vector2Int gridSize, bool flat){
+    private List<Color> GetColors(Vector3[,] Vertices, Vector2Int gridPosition, Vector2Int gridSize, float[] noiseSamples, bool flat){
         List<Color> colors = new List<Color>();
-        float[] noiseSamples = NoiseGenerator.GetNoiseSamples(gridPosition, gridSize, false);
 
          for(int i = 0; i < Vertices.GetLength(1) - 1; i++){
             for(int j = 0; j < Vertices.GetLength(0) - 1; j++){

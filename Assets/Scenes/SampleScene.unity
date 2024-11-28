@@ -889,6 +889,8 @@ MonoBehaviour:
   <NoiseSampleSize>k__BackingField: {x: 128, y: 128}
   <XOffset>k__BackingField: 0
   <YOffset>k__BackingField: 0
+  minimumNoiseSample: 0
+  maximumNoiseSample: 0
   <Scale>k__BackingField: 0
   <Octaves>k__BackingField: 0
   <Lacunarity>k__BackingField: 0
@@ -978,11 +980,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ccf189395d87c641be0057e7005eaa9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <GridSize>k__BackingField: {x: 2, y: 2}
+  <GridSize>k__BackingField: {x: 1, y: 1}
   <LandSize>k__BackingField: {x: 128, y: 128}
   MaximumHeight: 50
   MinimumHeight: -1
-  MeshHeightMultiplyer: 7.66
+  MeshHeightMultiplyer: 51
   MeshHeightCurve:
     serializedVersion: 2
     m_Curve:
@@ -1061,19 +1063,19 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  PeaksAndValleys:
+  PeaksAndValleysCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  Erosion:
+  ErosionCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  Contentinentalness:
+  ContentinentalnessCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
@@ -1096,8 +1098,10 @@ MonoBehaviour:
   <NoiseSampleSize>k__BackingField: {x: 256, y: 256}
   <XOffset>k__BackingField: 0
   <YOffset>k__BackingField: 0
-  <Scale>k__BackingField: 1
-  <Octaves>k__BackingField: 1
+  minimumNoiseSample: 0
+  maximumNoiseSample: 0
+  <Scale>k__BackingField: 100
+  <Octaves>k__BackingField: 4
   <Lacunarity>k__BackingField: 2
   <Persistance>k__BackingField: 0.5
 --- !u!1660057539 &9223372036854775807

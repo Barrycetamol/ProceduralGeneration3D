@@ -14,6 +14,7 @@ public class PerlinNoiseGenerator : NoiseGenerator
     [field: SerializeField] public int Octaves {get; set;}
     [field: SerializeField] public float Lacunarity {get; set;}
     [field: SerializeField] public float Persistance {get; set;}
+    [field: SerializeField] public Vector2 NormalizationOffsets {get; set;}
 
     public PerlinNoiseGenerator(int seed, float scale, int widthResolution, int heightResolution, int xOffset, int yOffset, float lacunarity, int octaves, float persistance)
     {
@@ -22,26 +23,26 @@ public class PerlinNoiseGenerator : NoiseGenerator
         XOffset = xOffset;
         YOffset = yOffset;
         Scale = Math.Max(scale, 1.0001f); // Scale must be positive
-        Lacunarity = Math.Min(1, lacunarity);
-        Octaves = Math.Min(0, octaves);
+        Lacunarity = Math.Max(1, lacunarity);
+        Octaves = Math.Max(0, octaves);
         Persistance = Math.Clamp(persistance, 0.0f, 1.0f);
 
     }
 
     void Start(){
         Scale = Math.Max(Scale, 1.0001f); // Scale must be positive
-        Lacunarity = Math.Min(1, Lacunarity);
-        Octaves = Math.Min(1, Octaves);
+        Lacunarity = Math.Max(1, Lacunarity);
+        Octaves = Math.Max(1, Octaves);
         Persistance = Math.Clamp(Persistance, 0.01f, 1.0f);
     }
 
     public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int gridMeshSize, bool useDeltaTime)
     {
-        pixels = new float[gridMeshSize.x *  gridMeshSize.y];
+        float[] pixels = new float[gridMeshSize.x *  gridMeshSize.y];
         Debug.Log($"Size of pixels in noise generation: {pixels.Length}");
 
-        float chunkXoffset = offsets.x * (gridMeshSize.x);
-        float chunkYoffset = offsets.y * (gridMeshSize.y);
+        float chunkXoffset = offsets.x * (gridMeshSize.x - 1) + XOffset;
+        float chunkYoffset = offsets.y * (gridMeshSize.y - 1) + YOffset;
 
         float timeOffset = 0;
         float xCoord;
@@ -55,11 +56,13 @@ public class PerlinNoiseGenerator : NoiseGenerator
                 float amplitude = 1;
                 float freq = 1;
                 float noiseSample = 0;
+                float globalXcoord = (float) i + chunkXoffset;
+                float globalYcoord = (float) j + chunkYoffset;
                 for(int k = 0; k < Octaves; k++){
-                    xCoord =  ((float) (i) + chunkXoffset + Seed + XOffset) / Scale * freq;
-                    yCoord =  ((float) (j) + chunkYoffset + Seed + YOffset) / Scale * freq;
+                    xCoord =  ( globalXcoord + Seed + timeOffset) / Scale * freq;
+                    yCoord =  ( globalYcoord + Seed + timeOffset) / Scale * freq;
                     
-                    noiseSample += (Mathf.PerlinNoise(xCoord, yCoord ) * 2f - 1f) * amplitude;
+                    noiseSample += (Mathf.PerlinNoise(xCoord , yCoord ) * 2f - 1f) * amplitude;
 
                     amplitude *= Persistance;
                     freq *= Lacunarity;
@@ -69,19 +72,24 @@ public class PerlinNoiseGenerator : NoiseGenerator
         }
 
         // Consider optimising this section, since we have to loop it 3 times to get the value
-        float min = pixels.Min();
-        float max = pixels.Max();
+        minimumNoiseSample = pixels.Min();
+        maximumNoiseSample = pixels.Max();
 
-        if(min == max){
-            Debug.LogError("Noise generation didnt work. All pixel values were the same.");
-            return pixels;
-        }
-
-        // normalize the output to be between 0 and 1
-        for(int i = 0; i < pixels.Length; i++){
-            pixels[i] = Mathf.InverseLerp(min, max, pixels[i]);
-        }
-        Debug.Log($"Finished generating perlin noise");
+        if(minimumNoiseSample == maximumNoiseSample) Debug.LogError("Noise generation didnt work. All pixel values were the same.");
+        Debug.Log($"Finished generating perlin noise.");
         return pixels;
+       
     }
+
+
+    public override float[] NormalizeSamples(float[] noiseMap, float min, float max){
+         for(int i = 0; i < noiseMap.Length; i++){
+            float normalizedSample = (noiseMap[i] + 1) / (NormalizationOffsets.x * NormalizationOffsets.y);
+            //noiseMap[i] = Mathf.InverseLerp(min, max, noiseMap[i]);
+            noiseMap[i] = normalizedSample;
+        }
+
+        return noiseMap;
+    }
+
 }
