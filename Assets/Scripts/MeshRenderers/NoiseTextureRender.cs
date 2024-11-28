@@ -19,8 +19,14 @@ class NoiseTextureRender : MonoBehaviour{
             NoiseGenerator = GetComponent<NoiseGenerator>();
             RenderTarget = GetComponent<MeshRenderer>();
             ColorTextureRenderer = GetComponent<ColorTextureRenderer>();
-            if(NoiseGenerator != null) NoiseGenerator.GenerateNoise(UseTimeOffset);
-            if(RenderTarget != null && ColorTextureRenderer != null) WritePixelsToRenderTarget(NoiseGenerator.GetNoiseSamples(), NoiseGenerator.NoiseSampleSize);
+            // if(NoiseGenerator != null && RenderTarget != null && ColorTextureRenderer != null) WritePixelsToRenderTarget(
+            //                                                                                     NoiseGenerator.GetNoiseSamples(new Vector2Int(0,0), 
+            //                                                                                     new Vector2Int(
+            //                                                                                         RenderTarget.material.mainTexture.width,
+            //                                                                                         RenderTarget.material.mainTexture.height
+            //                                                                                         ), UseTimeOffset), 
+            //                                                                                         NoiseGenerator.NoiseSampleSize
+            //                                                                                     );
         }
 
         public void SetRenderTarter(Renderer target){
@@ -34,7 +40,7 @@ class NoiseTextureRender : MonoBehaviour{
             for(int i = 0; i < samepleSize.y; i++){
                 for(int j = 0; j < samepleSize.x; j++){
                     float noiseSample = noiseSamples[i * samepleSize.x + j];
-                    pixels[i * samepleSize.x + j] = ColorTextureRenderer.GenerateColor(noiseSample);
+                    pixels[i * samepleSize.x + j] = ColorTextureRenderer.GenerateColor(noiseSample, false);
                 }
             }
 

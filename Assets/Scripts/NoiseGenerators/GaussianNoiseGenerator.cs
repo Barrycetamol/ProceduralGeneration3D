@@ -9,7 +9,7 @@ public class GuassianNoiseGenerator : NoiseGenerator
 
     private bool hasSpare = false;
     private double spare = 0;
-    public override void GenerateNoise(bool useDeltaTime)
+    public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int sampleSize, bool useDeltaTime)
     {
         float timeOffset = 1;
         if(useDeltaTime) timeOffset = timePassed;
@@ -25,6 +25,7 @@ public class GuassianNoiseGenerator : NoiseGenerator
             }
         }
         Debug.Log($"Finished generting guassian noise");
+        return pixels;
     }
  
     // Taken from: https://en.wikipedia.org/wiki/Marsaglia_polar_method   C++ section

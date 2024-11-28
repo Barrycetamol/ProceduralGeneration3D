@@ -31,23 +31,24 @@ public class ColorTextureRenderer  : MonoBehaviour{
     }
 
 
-    public Color[] GenerateColors(float[] noiseSamples){
+    public Color[] GenerateColors(float[] noiseSamples, bool flat){
         Colors = new Color[noiseSamples.GetLength(0)];
 
         for(int i = 0; i < noiseSamples.GetLength(0); i++){
-            Colors.Append(GenerateColor(noiseSamples[i]));
+            Colors.Append(GenerateColor(noiseSamples[i], flat));
         }  
 
         return Colors;
     }
 
-    public Color GenerateColor(float noiseSample){
+    public Color GenerateColor(float noiseSample, bool flat){
         Color returnColor = new Color(noiseSample, noiseSample, noiseSample);
         if(ColorBands.Count == 0) return returnColor;
 
+        float prev_noise = 0;
         for(int i = 0; i < ColorBands.Count; i++){
             if(noiseSample <= ColorBands[i].threshold) {
-                returnColor = ColorBands[i].color;
+                returnColor = Mathf.Lerp(prev_noise, ColorBands[i].threshold, noiseSample) * ColorBands[i].color;
                 break;
             }
         }

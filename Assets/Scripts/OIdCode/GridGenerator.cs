@@ -55,8 +55,8 @@ public class GridGenerator : MonoBehaviour
     
     void Start()
     {
-        Land = new Terrain("Land", X, Y, false);
-        Water = new Terrain("Water", X, Y, true);
+        Land = new Terrain("Land", new Vector2Int(X, Y), new Vector2Int(0,0), false);
+        Water = new Terrain("Water", new Vector2Int(X, Y), new Vector2Int(0,0), true);
 
         InvokeRepeating("UpdateLand", 1.0f, 1.0f);
     }

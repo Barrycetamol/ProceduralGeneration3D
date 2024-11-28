@@ -2,8 +2,9 @@ using UnityEngine;
 
 public class RandomNoiseGenerator : NoiseGenerator
 {
-    public override void GenerateNoise(bool useDeltaTime)
+    public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int sampleSize, bool useDeltaTime)
     {
+        NoiseSampleSize = sampleSize;
         pixels = new float[NoiseSampleSize.x * NoiseSampleSize.y];
         for (int i = 0; i < NoiseSampleSize.x; i++)
         {
@@ -12,5 +13,7 @@ public class RandomNoiseGenerator : NoiseGenerator
                 pixels[i * NoiseSampleSize.y + j] = UnityEngine.Random.Range(0, 1.0f);
             }
         }
+        return pixels;
+
     }
 }
