@@ -13,14 +13,14 @@ public class GuassianNoiseGenerator : NoiseGenerator
     {
         float timeOffset = 1;
         if(useDeltaTime) timeOffset = timePassed;
-        float[] pixels = new float[NoiseSampleSize.x * NoiseSampleSize.y];
+        float[] pixels = new float[sampleSize.x *  sampleSize.y];
         UnityEngine.Random.InitState(Seed);
-        for (int i = 0; i < NoiseSampleSize.x; i++)
+        for (int i = 0; i < sampleSize.x; i++)
         {
-            for (int j = 0; j < NoiseSampleSize.y; j++)
+            for (int j = 0; j < sampleSize.y; j++)
             {
                 float sample = (float) GenerationGuassian();  // casting here may cause artifacts
-                pixels[i * NoiseSampleSize.y + j] = sample * timeOffset;
+                pixels[i * sampleSize.y + j] = sample * timeOffset;
 
             }
         }
@@ -48,5 +48,5 @@ public class GuassianNoiseGenerator : NoiseGenerator
         }
     }
 
-    public override float[] NormalizeSamples(float[] noiseMap, float min, float max){return new float[0];}
+    public override float[] NormalizeSamples(float[] noiseMap, float minimum, float maximum){return new float[0];}
 }

@@ -10,15 +10,15 @@ using UnityEngine;
 [Serializable]
 public class PerlinNoiseGenerator : NoiseGenerator
 {
+    [field: Header("Perlin specific")]
     [field: SerializeField] public float Scale { get; set; }
     [field: SerializeField] public int Octaves {get; set;}
     [field: SerializeField] public float Lacunarity {get; set;}
     [field: SerializeField] public float Persistance {get; set;}
     [field: SerializeField] public Vector2 NormalizationOffsets {get; set;}
 
-    public PerlinNoiseGenerator(int seed, float scale, int widthResolution, int heightResolution, int xOffset, int yOffset, float lacunarity, int octaves, float persistance)
+    public PerlinNoiseGenerator(int seed, float scale, int xOffset, int yOffset, float lacunarity, int octaves, float persistance)
     {
-        NoiseSampleSize = new Vector2Int(widthResolution, heightResolution);
         Seed = seed;
         XOffset = xOffset;
         YOffset = yOffset;
@@ -34,6 +34,7 @@ public class PerlinNoiseGenerator : NoiseGenerator
         Lacunarity = Math.Max(1, Lacunarity);
         Octaves = Math.Max(1, Octaves);
         Persistance = Math.Clamp(Persistance, 0.01f, 1.0f);
+        NormalizationOffsets = new Vector2(Mathf.Max(1.0f, NormalizationOffsets.x), Mathf.Max(1.0f, NormalizationOffsets.y));
     }
 
     public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int gridMeshSize, bool useDeltaTime)
@@ -82,10 +83,9 @@ public class PerlinNoiseGenerator : NoiseGenerator
     }
 
 
-    public override float[] NormalizeSamples(float[] noiseMap, float min, float max){
+    public override float[] NormalizeSamples(float[] noiseMap, float minimum, float maxium){
          for(int i = 0; i < noiseMap.Length; i++){
             float normalizedSample = (noiseMap[i] + 1) / (NormalizationOffsets.x * NormalizationOffsets.y);
-            //noiseMap[i] = Mathf.InverseLerp(min, max, noiseMap[i]);
             noiseMap[i] = normalizedSample;
         }
 

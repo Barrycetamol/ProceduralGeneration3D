@@ -1,14 +1,15 @@
-
-
 using UnityEngine;
+using UnityEngine.UI;
 
-class NoiseTextureRender : MonoBehaviour{
+public class NoiseTextureRender : MonoBehaviour{
         private Renderer RenderTarget{get; set;}
         private NoiseGenerator NoiseGenerator {get; set;}
         private ColorTextureRenderer ColorTextureRenderer{get; set;}
 
         [field: SerializeField] public bool AutoUpdate{get; set;} = false;
         [field: SerializeField] public bool UseTimeOffset {get; set;} = false;
+        [field: SerializeField] public bool WriteToImage {get; set;} = false;
+        [field: SerializeField] public Image NoiseTarget {get; set;}
 
         void Start(){
             
@@ -18,18 +19,9 @@ class NoiseTextureRender : MonoBehaviour{
         public void GeneratePlane(){
             NoiseGenerator = GetComponent<NoiseGenerator>();
             RenderTarget = GetComponent<MeshRenderer>();
-            ColorTextureRenderer = GetComponent<ColorTextureRenderer>();
-            // if(NoiseGenerator != null && RenderTarget != null && ColorTextureRenderer != null) WritePixelsToRenderTarget(
-            //                                                                                     NoiseGenerator.GetNoiseSamples(new Vector2Int(0,0), 
-            //                                                                                     new Vector2Int(
-            //                                                                                         RenderTarget.material.mainTexture.width,
-            //                                                                                         RenderTarget.material.mainTexture.height
-            //                                                                                         ), UseTimeOffset), 
-            //                                                                                         NoiseGenerator.NoiseSampleSize
-            //                                                                                     );
         }
 
-        public void SetRenderTarter(Renderer target){
+        public void SetRenderTarget(Renderer target){
             RenderTarget = target;
         }
 
@@ -40,7 +32,7 @@ class NoiseTextureRender : MonoBehaviour{
             for(int i = 0; i < samepleSize.y; i++){
                 for(int j = 0; j < samepleSize.x; j++){
                     float noiseSample = noiseSamples[i * samepleSize.x + j];
-                    pixels[i * samepleSize.x + j] = ColorTextureRenderer.GenerateColor(noiseSample, false);
+                    pixels[i * samepleSize.x + j] = new Color(noiseSample, noiseSample, noiseSample);
                 }
             }
 
@@ -49,7 +41,19 @@ class NoiseTextureRender : MonoBehaviour{
             texture.SetPixels(pixels);
             texture.Apply(false);
 
-            RenderTarget.material.mainTexture = texture;
+            if(RenderTarget != null)RenderTarget.material.mainTexture = texture;
+            if(WriteToImage) WriteTextureToImage(texture);
 
+        }
+
+        public void WriteTextureToImage(Texture2D texture){
+            Sprite newSprite = Sprite.Create(
+                texture,
+                new Rect(0, 0, texture.width, texture.height), // Full texture area
+                new Vector2(0.5f, 0.5f) // Pivot at the center
+            );
+
+            // Assign the Sprite to the Image component
+            NoiseTarget.sprite = newSprite;
         }
 }
