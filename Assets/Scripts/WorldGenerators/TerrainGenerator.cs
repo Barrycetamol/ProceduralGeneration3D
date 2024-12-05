@@ -9,6 +9,7 @@ public class TerrainGenerator : MonoBehaviour
     [field: Header("Base generation settings")]
     [field: SerializeField] public Vector2Int GridSize { get; set; }
     [field: SerializeField] public Vector2Int GridResolution { get; set; }
+    [field: SerializeField] public int MeshDetailLevel {get; set;}
     [field: SerializeField] public float MaximumHeight;
     [field: SerializeField] public float MinimumHeight;
     [field: SerializeField] public float MeshHeightMultiplyer;
@@ -46,7 +47,7 @@ public class TerrainGenerator : MonoBehaviour
     public void StartGenerating()
     {
         // Clamp for min size.
-        GridResolution = new Vector2Int(Math.Clamp(GridResolution.x, 1, 128), Math.Clamp(GridResolution.y, 1, 128));
+        GridResolution = new Vector2Int(Math.Clamp(GridResolution.x, 1, 4096), Math.Clamp(GridResolution.y, 1, 4096));
         GridSize = new Vector2Int(Math.Max(1, GridSize.x), Math.Max(1, GridSize.y));  // Ensure 1x1 square
 
         foreach (Terrain terrain in Terrains)
@@ -172,13 +173,13 @@ public class TerrainGenerator : MonoBehaviour
 
     private Vector3[,] GenerateWaterVertices(Vector2Int gridPosition, Vector2Int gridSize, float[] noiseMap)
     {
-        Vector3[,] vertices = new Vector3[gridSize.x, gridSize.y];
+        Vector3[,] vertices = new Vector3[gridSize.x * MeshDetailLevel, gridSize.y * MeshDetailLevel];
 
-        for (int i = 0; i < gridSize.x; i++)
+        for (int i = 0; i < gridSize.x * MeshDetailLevel; i++)
         {
-            for (int j = 0; j < gridSize.y; j++)
+            for (int j = 0; j < gridSize.y * MeshDetailLevel; j++)
             {
-                vertices[i, j] = new Vector3(i, SeaLevel, j);
+                vertices[i, j] = new Vector3(i / MeshDetailLevel, SeaLevel, j / MeshDetailLevel);
             }
         }
 
@@ -274,13 +275,15 @@ public class TerrainGenerator : MonoBehaviour
 
     private Vector3[,] GenerateLandVertices(Vector2Int gridPosition, Vector2Int gridSize, NoiseMapInfo samples)
     {
-        Vector3[,] vertices = new Vector3[gridSize.x, gridSize.y];
+        Vector3[,] vertices = new Vector3[gridSize.x * MeshDetailLevel, gridSize.y * MeshDetailLevel];
 
-        for (int i = 0; i < gridSize.x; i++)
+        for (int i = 0; i < gridSize.x * MeshDetailLevel; i++)
         {
-            for (int j = 0; j < gridSize.y; j++)
+            for (int j = 0; j < gridSize.y * MeshDetailLevel; j++)
             {
-                vertices[i, j] = new Vector3(i, samples.CombinedValues.noiseMap[i * gridSize.y + j] * MeshHeightMultiplyer, j);
+                int i_offset = i / MeshDetailLevel;
+                int j_offset = j / MeshDetailLevel;
+                vertices[i, j] = new Vector3((float)i / MeshDetailLevel, samples.CombinedValues.noiseMap[i_offset * gridSize.y + j_offset] * MeshHeightMultiplyer, (float)j / MeshDetailLevel);
             }
         }
 
@@ -297,30 +300,51 @@ public class TerrainGenerator : MonoBehaviour
     private List<Color> GetColors(Vector3[,] Vertices, Vector2Int gridSize, float[] samples, ColorTextureRenderer colorBands, bool flat)
     {
         List<Color> colors = new List<Color>();
+        Debug.Log($"Vertices lengths: {Vertices.GetLength(1)}, {Vertices.GetLength(0)}  {Vertices.GetLength(0) * Vertices.GetLength(1)},  noiseSample length: {samples.Length}");
 
-        for (int i = 0; i < Vertices.GetLength(1) - 1; i++)
+        for (int i = 0; i < Vertices.GetLength(1); i++)
         {
-            for (int j = 0; j < Vertices.GetLength(0) - 1; j++)
+            for (int j = 0; j < Vertices.GetLength(0); j++)
             {
-                float noiseSampleBottomLeft = samples[i * gridSize.y + j];
-                float noiseSampleTopLeft = samples[i * gridSize.y + j + 1];
-                float noiseSampleBottomRight = samples[(i + 1) * gridSize.y + j];
-                float noiseSampleTopRight = samples[(i + 1) * gridSize.y + j + 1];
+                // fractional differences between current vertex and grid resolution
+                float fractionalDistanceX = (i % MeshDetailLevel) / (float)MeshDetailLevel;
+                float fractionalDistanceY = (j % MeshDetailLevel) / (float)MeshDetailLevel;
+
+                // current noisemap element
+                int noiseMapX = i / MeshDetailLevel;
+                int noiseMapY = j / MeshDetailLevel;
+                // the next noiseMap element
+                int noiseMapX_Next = Mathf.Min(noiseMapX + 1, gridSize.x - 1);
+                int noiseMapY_Next = Mathf.Min(noiseMapY + 1, gridSize.y - 1);
+
+                // Get noise samples from noisemap
+                float noiseSampleBottomLeft = samples[noiseMapX * gridSize.y + noiseMapY];
+                float noiseSampleTopLeft = samples[noiseMapX_Next * gridSize.y + noiseMapY];
+                float noiseSampleBottomRight = samples[noiseMapX * gridSize.y + noiseMapY_Next];
+                float noiseSampleTopRight = samples[noiseMapX_Next * gridSize.y + noiseMapY_Next];
+
+                // interpolate between the points
+                float noiseSampleBottom = Mathf.Lerp(noiseSampleBottomLeft, noiseSampleBottomRight, fractionalDistanceX);
+                float noiseSampleTop = Mathf.Lerp(noiseSampleTopLeft, noiseSampleTopRight, fractionalDistanceX);
+                float noiseSample = Mathf.Lerp(noiseSampleBottom, noiseSampleTop, fractionalDistanceY);
+
+                colors.Add(colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight, noiseSample), flat));
+
+                // Color bottomLeftColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight, noiseSampleBottomLeft), flat);
+                // Color topLeftColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleTopLeft), flat);
+                // Color bottomRightColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleBottomRight), flat);
+                // Color topRightColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleTopRight), flat);
 
 
-                Color bottomLeftColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight, noiseSampleBottomLeft), flat);
-                Color topLeftColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleTopLeft), flat);
-                Color bottomRightColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleBottomRight), flat);
-                Color topRightColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleTopRight), flat);
-
-                colors.Add(bottomLeftColor);
-                colors.Add(topLeftColor);
-                colors.Add(bottomRightColor);
-                colors.Add(topRightColor);
+                // colors.Add(bottomLeftColor);
+                // colors.Add(topLeftColor);
+                // colors.Add(bottomRightColor);
+                // colors.Add(topRightColor);
 
 
             }
         }
+        Debug.Log($"Color size: {colors.Count}, {Vertices.Length}");
         return colors;
     }
 }

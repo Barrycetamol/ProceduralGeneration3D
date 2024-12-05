@@ -853,8 +853,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.2991445
-      value: 0.006846249
+      time: 0.20203757
+      value: 0.0659588
       inSlope: -0.03362792
       outSlope: -0.03362792
       tangentMode: 0
@@ -862,8 +862,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.5047396
-      value: -0.0022001117
+      time: 0.49665242
+      value: 0.087674156
       inSlope: 0.03765069
       outSlope: 0.03765069
       tangentMode: 0
@@ -922,12 +922,12 @@ MonoBehaviour:
   <Seed>k__BackingField: 0
   <XOffset>k__BackingField: 0
   <YOffset>k__BackingField: 0
-  minimumNoiseSample: 0
-  maximumNoiseSample: 0
-  <Scale>k__BackingField: 100
+  minimumNoiseSample: -1.0188322
+  maximumNoiseSample: 1.0268284
+  <Scale>k__BackingField: 250
   <Octaves>k__BackingField: 2
-  <Lacunarity>k__BackingField: 3
-  <Persistance>k__BackingField: 0.2
+  <Lacunarity>k__BackingField: 2
+  <Persistance>k__BackingField: 0.3
   <NormalizationOffsets>k__BackingField: {x: 1, y: 1.5}
 --- !u!1 &677224804
 GameObject:
@@ -2149,8 +2149,8 @@ MonoBehaviour:
   <YOffset>k__BackingField: 0
   minimumNoiseSample: 0
   maximumNoiseSample: 0
-  <Scale>k__BackingField: 100
-  <Octaves>k__BackingField: 3
+  <Scale>k__BackingField: 400
+  <Octaves>k__BackingField: 2
   <Lacunarity>k__BackingField: 2
   <Persistance>k__BackingField: 0.5
   <NormalizationOffsets>k__BackingField: {x: 1, y: 1.5}
@@ -2172,20 +2172,29 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 1
-      outSlope: 1
+      inSlope: 0.48395643
+      outSlope: 0.48395643
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.33333334
     - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 1
+      time: 0.6593467
+      value: 0.31909508
+      inSlope: 0.84818435
+      outSlope: 0.84818435
       tangentMode: 34
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.9583435
+      value: 0.6816025
+      inSlope: 1.2124122
+      outSlope: 1.2124122
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -2404,20 +2413,38 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 1
-      outSlope: 1
+      inSlope: 0.3764619
+      outSlope: 0.3764619
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.7489216
+      value: 0.28194043
+      inSlope: 1.0787337
+      outSlope: 1.0787337
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.95783573
+      value: 0.6540177
+      inSlope: 4.993294
+      outSlope: 4.993294
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 1
+      inSlope: 8.205582
+      outSlope: 8.205582
       tangentMode: 34
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.33333334
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -2504,10 +2531,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ccf189395d87c641be0057e7005eaa9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <GridSize>k__BackingField: {x: 3, y: 3}
-  <GridResolution>k__BackingField: {x: 128, y: 128}
-  MaximumHeight: 2
-  MinimumHeight: -1
+  <GridSize>k__BackingField: {x: 1, y: 1}
+  <GridResolution>k__BackingField: {x: 16, y: 16}
+  <MeshDetailLevel>k__BackingField: 5
+  MaximumHeight: 0.1
+  MinimumHeight: 0
   MeshHeightMultiplyer: 51
   AutoUpdate: 0
   <SeaLevel>k__BackingField: 1

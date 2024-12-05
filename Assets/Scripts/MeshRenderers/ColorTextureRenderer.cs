@@ -47,13 +47,18 @@ public class ColorTextureRenderer  : MonoBehaviour{
         if(ColorBands.Count == 0) return returnColor;
 
         float prev_threshold = 0;
+        Color prev_color = ColorBands[0].color;
         for(int i = 0; i < ColorBands.Count; i++){
             if(noiseSample <= ColorBands[i].threshold) {
                 if(flat) returnColor = ColorBands[i].color;
-                else returnColor = Mathf.Lerp(prev_threshold, ColorBands[i].threshold, noiseSample) * ColorBands[i].color;
+                else{
+                    float t = Mathf.InverseLerp(prev_threshold, ColorBands[i].threshold, noiseSample);
+                    returnColor = Color.Lerp(prev_color, ColorBands[i].color, t);
+                } 
                 break;
             }
             prev_threshold = ColorBands[i].threshold;
+            prev_color = ColorBands[i].color;
         }
 
         return returnColor;

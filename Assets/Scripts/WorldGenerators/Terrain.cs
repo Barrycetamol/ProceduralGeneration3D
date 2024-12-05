@@ -73,6 +73,7 @@ public class Terrain{
         Mesh = new Mesh();
         MeshRenderer = m_Terrain.AddComponent<MeshRenderer>();
         MeshFilter= m_Terrain.AddComponent<MeshFilter>();
+        Mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
         MeshRenderer.material = new Material(Shader.Find("Custom/VertexColorShader"));
         MeshRenderer.material.SetFloat("_Smoothness", 0.0f);
@@ -94,6 +95,7 @@ public class Terrain{
         Mesh.triangles = TriangleList.ToArray();
 
         Mesh.RecalculateNormals();
+        Mesh.RecalculateBounds();
 
         MeshFilter.mesh = Mesh;
     }
@@ -118,6 +120,12 @@ public class Terrain{
 
     public void SetVertices(Vector3[,] vertices){
         Vertices = vertices;
+        for(int i = 0; i < Vertices.GetLength(1); i++){
+            for(int j = 0; j < Vertices.GetLength(0); j++){
+                VertexList.Add(Vertices[i, j]);
+            }
+        }
+
         CreateTriangles();
     }
 
@@ -127,29 +135,25 @@ public class Terrain{
 
 
     private void CreateTriangles(){
+        int height = Vertices.GetLength(0);
+        int width = Vertices.GetLength(1);
 
-        for(int i = 0; i < Vertices.GetLength(1) - 1; i++){
-            for(int j = 0; j < Vertices.GetLength(0) - 1; j++){
-
-                Vector3 bottomLeft = Vertices[i, j];
-                Vector3 topLeft = Vertices[i, j + 1];
-                Vector3 bottomRight = Vertices[i + 1, j];
-                Vector3 topRight = Vertices[i + 1, j + 1];
-
-                // Add vertices to the vertex list
-                int vertexIndex = VertexList.Count;
-                VertexList.Add(bottomLeft);
-                VertexList.Add(topLeft);
-                VertexList.Add(bottomRight);
-                VertexList.Add(topRight);
+        for(int i = 0; i < width - 1; i++){
+            for(int j = 0; j < height - 1; j++){
+                int vertexIndex = i * height + j;
+                int bottomLeft = vertexIndex;
+                int bottomRight = vertexIndex + height;
+                int topLeft = vertexIndex + 1;
+                int topRight = bottomRight + 1;
 
                 // Add triangles for the two triangles of the quad
-                TriangleList.Add(vertexIndex);
-                TriangleList.Add(vertexIndex + 1);
-                TriangleList.Add(vertexIndex + 2);
-                TriangleList.Add(vertexIndex + 1);
-                TriangleList.Add(vertexIndex + 3);
-                TriangleList.Add(vertexIndex + 2);
+                TriangleList.Add(bottomLeft);
+                TriangleList.Add(topLeft);
+                TriangleList.Add(bottomRight);
+
+                TriangleList.Add(topLeft);
+                TriangleList.Add(topRight);
+                TriangleList.Add(bottomRight);
             }
         }
     }
