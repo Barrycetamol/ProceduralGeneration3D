@@ -54,6 +54,8 @@ public class Terrain{
 
     public Vector2Int GridPosition {get; set;}
     public Vector2Int GridSize {get; set;}
+    private GerstnerWaves GerstnerWaves{get; set;} = new GerstnerWaves();
+    private bool IsWater{get; set;}
 
     /// <summary>
     /// Constructor.
@@ -62,10 +64,11 @@ public class Terrain{
     /// <param name="width">Width of our mesh</param>
     /// <param name="height">Height of our mesh</param>
     /// <param name="useDeltaTime">Flag that designates whether this terrain should use deltaTime when calculating its mesh</param>
-    public Terrain(String name, Vector2Int gridSize, Vector2Int gridPosition, bool useDeltaTime){
+    public Terrain(String name, Vector2Int gridSize, Vector2Int gridPosition, bool useDeltaTime, bool isWater){
         GridPosition = gridPosition;
         GridSize = gridSize;
         UseDeltaTime = useDeltaTime;
+        IsWater = isWater;
 
         m_Terrain = new GameObject(name);
         m_Terrain.transform.position = new Vector3(GridPosition.x * (GridSize.x - 1), 0, GridPosition.y * (GridSize.y - 1));
@@ -93,11 +96,16 @@ public class Terrain{
         Mesh.vertices = VertexList.ToArray();
         Mesh.colors = ColorList.ToArray();
         Mesh.triangles = TriangleList.ToArray();
-
         Mesh.RecalculateNormals();
         Mesh.RecalculateBounds();
 
         MeshFilter.mesh = Mesh;
+
+        if(IsWater) m_Terrain.AddComponent<GerstnerWaves>();
+
+
+
+
     }
 
     /// <summary>

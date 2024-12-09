@@ -21,8 +21,10 @@ public class TerrainGenerator : MonoBehaviour
     [field: SerializeField] public TerrainModifier ErosionModifier;
     [field: SerializeField] public TerrainModifier PeaksAndValleysModifier;
     [field: SerializeField] public ColorTextureRenderer WaterColourBands {get; set;}
-
     [field: SerializeField] public ColorTextureRenderer LandColourBands { get; set; }
+    [field: SerializeField] public ColorTextureRenderer CloudColourBands { get; set; }
+
+
     [field: Header("Visualisation of noisemaps")]
     [field: SerializeField] public NoiseTextureRender HeightNoiseTexture { get; set; }
     [field: SerializeField] public NoiseTextureRender ErosionNoiseTexture { get; set; }
@@ -32,6 +34,7 @@ public class TerrainGenerator : MonoBehaviour
 
     private List<Terrain> Terrains { get; set; } = new List<Terrain>();
     private List<Terrain> WaterTerrains { get; set; } = new List<Terrain>();
+    private float CalculatedSeaLevel = 0;
 
 
     void Start()
@@ -41,7 +44,12 @@ public class TerrainGenerator : MonoBehaviour
             InvokeRepeating("StartGenerating", 1.0f, 4.0f);
         }
         else StartGenerating();
+    }
 
+    void Update(){
+        if(WaterTerrains.Count > 0){
+
+        }
     }
 
     public void StartGenerating()
@@ -69,7 +77,7 @@ public class TerrainGenerator : MonoBehaviour
         {
             for (int j = 0; j < GridSize.y; j++)
             {
-                Terrains.Add(new Terrain($"Land_{i}x{j}", GridResolution, new Vector2Int(i, j), false));
+                Terrains.Add(new Terrain($"Land_{i}x{j}", GridResolution, new Vector2Int(i, j), false, false));
             }
         }
         GenerateWorld();
@@ -80,6 +88,7 @@ public class TerrainGenerator : MonoBehaviour
     {
         LandColourBands.SortColorBands();
         WaterColourBands.SortColorBands();
+        CalculatedSeaLevel = SeaLevel * MeshHeightMultiplyer / 2;
 
         // Create noise maps for each terrain segment
         Dictionary<string, NoiseMapInfo> landTerrainMaps = new Dictionary<string, NoiseMapInfo>();
@@ -110,7 +119,6 @@ public class TerrainGenerator : MonoBehaviour
         // sanity check to make sure generation hasn't failed.
         CheckNoiseMapsAreDifferent(landTerrainMaps, Terrains);
 
-
         // Normalize heights based on our min/maxes of each grid
         foreach (Terrain terrain in Terrains)
         {
@@ -136,7 +144,7 @@ public class TerrainGenerator : MonoBehaviour
             landTerrainMaps[terrain.m_Terrain.name] = noiseMapInfo;
 
             // Create a water terrain and store current combined noisemap
-            Terrain waterTerrain = new Terrain($"Water_{terrain.GridPosition.x}x{terrain.GridPosition.y}", GridResolution, new Vector2Int(terrain.GridPosition.x, terrain.GridPosition.y), false);
+            Terrain waterTerrain = new Terrain($"Water_{terrain.GridPosition.x}x{terrain.GridPosition.y}", GridResolution, new Vector2Int(terrain.GridPosition.x, terrain.GridPosition.y), false, true);
             waterTerrainMaps[waterTerrain.m_Terrain.name] = noiseMapInfo.CombinedValues.noiseMap;
             WaterTerrains.Add(waterTerrain);
         }
@@ -155,6 +163,7 @@ public class TerrainGenerator : MonoBehaviour
 
         // From terrain, add water
         //generate water
+
         foreach (Terrain waterTerrain in WaterTerrains)
         {
             GenerateWater(waterTerrain, waterTerrainMaps[waterTerrain.m_Terrain.name]);
@@ -165,7 +174,6 @@ public class TerrainGenerator : MonoBehaviour
     private void GenerateWater(Terrain terrain, float[] vertices)
     {
         terrain.Clear();
-        float[] seaLevelVertices = StripLandVertices(vertices);
         terrain.SetVertices(GenerateWaterVertices(terrain.GridPosition, terrain.GridSize, vertices));
         terrain.SetColors(GetColors(terrain.Vertices, terrain.GridSize, vertices, WaterColourBands, false));
         terrain.Refresh();
@@ -179,7 +187,7 @@ public class TerrainGenerator : MonoBehaviour
         {
             for (int j = 0; j < gridSize.y * MeshDetailLevel; j++)
             {
-                vertices[i, j] = new Vector3(i / MeshDetailLevel, SeaLevel, j / MeshDetailLevel);
+                vertices[i, j] = new Vector3(i / MeshDetailLevel, CalculatedSeaLevel, j / MeshDetailLevel);
             }
         }
 
@@ -199,7 +207,7 @@ public class TerrainGenerator : MonoBehaviour
         List<float> processedNoise = new List<float>(landVertices.Length);
         foreach (float landVertex in landVertices)
         {
-            if (landVertex < SeaLevel) processedNoise.Add(landVertex);
+            if (landVertex < CalculatedSeaLevel) processedNoise.Add(landVertex);
         }
 
         return processedNoise.ToArray();
@@ -292,8 +300,8 @@ public class TerrainGenerator : MonoBehaviour
 
     private float PerformHeightCalculation(float height, float erosion, float pv)
     {
-        return Mathf.Clamp01(HeightModifier.GetNoiseFromCurve(height) *
-               Mathf.Clamp01(ErosionModifier.GetNoiseFromCurve(erosion)) *
+        return Mathf.Clamp01(HeightModifier.GetNoiseFromCurve(height) +
+               Mathf.Clamp01(ErosionModifier.GetNoiseFromCurve(erosion)) +
                Mathf.Clamp01(PeaksAndValleysModifier.GetNoiseFromCurve(pv)));
     }
 

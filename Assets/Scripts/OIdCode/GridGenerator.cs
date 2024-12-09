@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+/// <summary>
+///  This was the first iteration of the code. I'm not sure any of it works anymore.
+/// </summary>
+
 
 public class GridGenerator : MonoBehaviour
 {
@@ -55,8 +59,8 @@ public class GridGenerator : MonoBehaviour
     
     void Start()
     {
-        Land = new Terrain("Land", new Vector2Int(X, Y), new Vector2Int(0,0), false);
-        Water = new Terrain("Water", new Vector2Int(X, Y), new Vector2Int(0,0), true);
+        Land = new Terrain("Land", new Vector2Int(X, Y), new Vector2Int(0,0), false, false);
+        Water = new Terrain("Water", new Vector2Int(X, Y), new Vector2Int(0,0), true, true);
 
         InvokeRepeating("UpdateLand", 1.0f, 1.0f);
     }
