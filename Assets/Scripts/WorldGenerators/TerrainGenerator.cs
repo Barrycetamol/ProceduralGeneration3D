@@ -77,7 +77,7 @@ public class TerrainGenerator : MonoBehaviour
         {
             for (int j = 0; j < GridSize.y; j++)
             {
-                Terrains.Add(new Terrain($"Land_{i}x{j}", GridResolution, new Vector2Int(i, j), false, false));
+                Terrains.Add(new Terrain($"Land_{i}x{j}", GridResolution, new Vector2Int(i, j), false, false, LandColourBands, MeshDetailLevel));
             }
         }
         GenerateWorld();
@@ -139,12 +139,12 @@ public class TerrainGenerator : MonoBehaviour
                         minimum, maximum
             );
             float[] combinedValues = CombineMaps(GridResolution, noiseMapInfo);
-            noiseMapInfo.CombinedValues = new SampleInfo(NormalizeSamples(combinedValues), minimum, maximum);
+            noiseMapInfo.CombinedValues = new SampleInfo(NormalizeSamples(combinedValues), combinedValues.Min(), combinedValues.Max());
 
             landTerrainMaps[terrain.m_Terrain.name] = noiseMapInfo;
 
             // Create a water terrain and store current combined noisemap
-            Terrain waterTerrain = new Terrain($"Water_{terrain.GridPosition.x}x{terrain.GridPosition.y}", GridResolution, new Vector2Int(terrain.GridPosition.x, terrain.GridPosition.y), false, true);
+            Terrain waterTerrain = new Terrain($"Water_{terrain.GridPosition.x}x{terrain.GridPosition.y}", GridResolution, new Vector2Int(terrain.GridPosition.x, terrain.GridPosition.y), false, true, WaterColourBands, MeshDetailLevel);
             waterTerrainMaps[waterTerrain.m_Terrain.name] = noiseMapInfo.CombinedValues.noiseMap;
             WaterTerrains.Add(waterTerrain);
         }
@@ -174,12 +174,12 @@ public class TerrainGenerator : MonoBehaviour
     private void GenerateWater(Terrain terrain, float[] vertices)
     {
         terrain.Clear();
-        terrain.SetVertices(GenerateWaterVertices(terrain.GridPosition, terrain.GridSize, vertices));
-        terrain.SetColors(GetColors(terrain.Vertices, terrain.GridSize, vertices, WaterColourBands, false));
+        terrain.SetNoiseMap(vertices);
+        terrain.SetVertices(GenerateWaterVertices(terrain.GridSize));
         terrain.Refresh();
     }
 
-    private Vector3[,] GenerateWaterVertices(Vector2Int gridPosition, Vector2Int gridSize, float[] noiseMap)
+    private Vector3[,] GenerateWaterVertices(Vector2Int gridSize)
     {
         Vector3[,] vertices = new Vector3[gridSize.x * MeshDetailLevel, gridSize.y * MeshDetailLevel];
 
@@ -197,8 +197,10 @@ public class TerrainGenerator : MonoBehaviour
     private void GenerateTerrain(Terrain terrain, NoiseMapInfo samples)
     {
         terrain.Clear();
+        terrain.SetMinMaxHeights(0, 1);
+        terrain.SetNoiseMap(samples.CombinedValues.noiseMap);
         terrain.SetVertices(GenerateLandVertices(terrain.GridPosition, terrain.GridSize, samples));
-        terrain.SetColors(GetColors(terrain.Vertices, terrain.GridSize, samples.CombinedValues.noiseMap, LandColourBands, false));
+
         terrain.Refresh();
     }
 
@@ -305,54 +307,5 @@ public class TerrainGenerator : MonoBehaviour
                Mathf.Clamp01(PeaksAndValleysModifier.GetNoiseFromCurve(pv)));
     }
 
-    private List<Color> GetColors(Vector3[,] Vertices, Vector2Int gridSize, float[] samples, ColorTextureRenderer colorBands, bool flat)
-    {
-        List<Color> colors = new List<Color>();
-        Debug.Log($"Vertices lengths: {Vertices.GetLength(1)}, {Vertices.GetLength(0)}  {Vertices.GetLength(0) * Vertices.GetLength(1)},  noiseSample length: {samples.Length}");
-
-        for (int i = 0; i < Vertices.GetLength(1); i++)
-        {
-            for (int j = 0; j < Vertices.GetLength(0); j++)
-            {
-                // fractional differences between current vertex and grid resolution
-                float fractionalDistanceX = (i % MeshDetailLevel) / (float)MeshDetailLevel;
-                float fractionalDistanceY = (j % MeshDetailLevel) / (float)MeshDetailLevel;
-
-                // current noisemap element
-                int noiseMapX = i / MeshDetailLevel;
-                int noiseMapY = j / MeshDetailLevel;
-                // the next noiseMap element
-                int noiseMapX_Next = Mathf.Min(noiseMapX + 1, gridSize.x - 1);
-                int noiseMapY_Next = Mathf.Min(noiseMapY + 1, gridSize.y - 1);
-
-                // Get noise samples from noisemap
-                float noiseSampleBottomLeft = samples[noiseMapX * gridSize.y + noiseMapY];
-                float noiseSampleTopLeft = samples[noiseMapX_Next * gridSize.y + noiseMapY];
-                float noiseSampleBottomRight = samples[noiseMapX * gridSize.y + noiseMapY_Next];
-                float noiseSampleTopRight = samples[noiseMapX_Next * gridSize.y + noiseMapY_Next];
-
-                // interpolate between the points
-                float noiseSampleBottom = Mathf.Lerp(noiseSampleBottomLeft, noiseSampleBottomRight, fractionalDistanceX);
-                float noiseSampleTop = Mathf.Lerp(noiseSampleTopLeft, noiseSampleTopRight, fractionalDistanceX);
-                float noiseSample = Mathf.Lerp(noiseSampleBottom, noiseSampleTop, fractionalDistanceY);
-
-                colors.Add(colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight, noiseSample), flat));
-
-                // Color bottomLeftColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight, noiseSampleBottomLeft), flat);
-                // Color topLeftColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleTopLeft), flat);
-                // Color bottomRightColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleBottomRight), flat);
-                // Color topRightColor = colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight,  noiseSampleTopRight), flat);
-
-
-                // colors.Add(bottomLeftColor);
-                // colors.Add(topLeftColor);
-                // colors.Add(bottomRightColor);
-                // colors.Add(topRightColor);
-
-
-            }
-        }
-        Debug.Log($"Color size: {colors.Count}, {Vertices.Length}");
-        return colors;
-    }
+   
 }

@@ -56,6 +56,11 @@ public class Terrain{
     public Vector2Int GridSize {get; set;}
     private GerstnerWaves GerstnerWaves{get; set;} = new GerstnerWaves();
     private bool IsWater{get; set;}
+    private ColorTextureRenderer ColorBand {get; set;}
+    private float[] NoiseMapSamples{get; set;}
+    private int MeshDetailLevel{get; set;}
+    public float MinimumHeight { get; private set; }
+    public float MaximumHeight { get; private set; }
 
     /// <summary>
     /// Constructor.
@@ -64,11 +69,13 @@ public class Terrain{
     /// <param name="width">Width of our mesh</param>
     /// <param name="height">Height of our mesh</param>
     /// <param name="useDeltaTime">Flag that designates whether this terrain should use deltaTime when calculating its mesh</param>
-    public Terrain(String name, Vector2Int gridSize, Vector2Int gridPosition, bool useDeltaTime, bool isWater){
+    public Terrain(String name, Vector2Int gridSize, Vector2Int gridPosition, bool useDeltaTime, bool isWater, ColorTextureRenderer colorBand, int meshDetailLevel){
         GridPosition = gridPosition;
         GridSize = gridSize;
         UseDeltaTime = useDeltaTime;
         IsWater = isWater;
+        ColorBand = colorBand;
+        MeshDetailLevel = meshDetailLevel;
 
         m_Terrain = new GameObject(name);
         m_Terrain.transform.position = new Vector3(GridPosition.x * (GridSize.x - 1), 0, GridPosition.y * (GridSize.y - 1));
@@ -101,11 +108,14 @@ public class Terrain{
 
         MeshFilter.mesh = Mesh;
 
-        if(IsWater) m_Terrain.AddComponent<GerstnerWaves>();
-
-
-
-
+        if(IsWater){
+            m_Terrain.AddComponent<GerstnerWaves>();
+            GerstnerWaves waves;
+            m_Terrain.TryGetComponent<GerstnerWaves>(out waves);
+            if(waves){
+                waves.AddColorBand(ColorBand);
+            }
+        }
     }
 
     /// <summary>
@@ -135,15 +145,12 @@ public class Terrain{
         }
 
         CreateTriangles();
-    }
-
-    public void SetColors(List<Color> colors){
-        ColorList = colors;
+        ColorList = GetColors(Vertices, GridSize, NoiseMapSamples, ColorBand, false);
     }
 
 
     private void CreateTriangles(){
-        int height = Vertices.GetLength(0);
+        int height = Vertices.GetLength(0); 
         int width = Vertices.GetLength(1);
 
         for(int i = 0; i < width - 1; i++){
@@ -164,5 +171,55 @@ public class Terrain{
                 TriangleList.Add(bottomRight);
             }
         }
+    }
+
+    private List<Color> GetColors(Vector3[,] Vertices, Vector2Int gridSize, float[] samples, ColorTextureRenderer colorBands, bool flat)
+    {
+        List<Color> colors = new List<Color>();
+        Debug.Log($"Vertices lengths: {Vertices.GetLength(1)}, {Vertices.GetLength(0)}  {Vertices.GetLength(0) * Vertices.GetLength(1)},  noiseSample length: {samples.Length}");
+        Debug.Log($"Minimum {MinimumHeight} -- maximum {MaximumHeight}");
+        for (int i = 0; i < Vertices.GetLength(1); i++)
+        {
+            for (int j = 0; j < Vertices.GetLength(0); j++)
+            {
+                // fractional differences between current vertex and grid resolution
+                float fractionalDistanceX = (i % MeshDetailLevel) / (float)MeshDetailLevel;
+                float fractionalDistanceY = (j % MeshDetailLevel) / (float)MeshDetailLevel;
+
+                // current noisemap element
+                int noiseMapX = i / MeshDetailLevel;
+                int noiseMapY = j / MeshDetailLevel;
+                // the next noiseMap element
+                int noiseMapX_Next = Mathf.Min(noiseMapX + 1, gridSize.x - 1);
+                int noiseMapY_Next = Mathf.Min(noiseMapY + 1, gridSize.y - 1);
+
+                // Get noise samples from noisemap
+                float noiseSampleBottomLeft = samples[noiseMapX * gridSize.y + noiseMapY];
+                float noiseSampleTopLeft = samples[noiseMapX_Next * gridSize.y + noiseMapY];
+                float noiseSampleBottomRight = samples[noiseMapX * gridSize.y + noiseMapY_Next];
+                float noiseSampleTopRight = samples[noiseMapX_Next * gridSize.y + noiseMapY_Next];
+
+                // interpolate between the points
+                float noiseSampleBottom = Mathf.Lerp(noiseSampleBottomLeft, noiseSampleBottomRight, fractionalDistanceX);
+                float noiseSampleTop = Mathf.Lerp(noiseSampleTopLeft, noiseSampleTopRight, fractionalDistanceX);
+                float noiseSample = Mathf.Lerp(noiseSampleBottom, noiseSampleTop, fractionalDistanceY);
+
+                colors.Add(colorBands.GenerateColor(Mathf.InverseLerp(MinimumHeight, MaximumHeight, noiseSample), flat));
+
+            }
+        }
+        Debug.Log($"Color size: {colors.Count}, {Vertices.Length}");
+        return colors;
+    }
+
+    public void SetNoiseMap(float[] samples)
+    {
+        NoiseMapSamples = samples;
+    }
+
+    internal void SetMinMaxHeights(float minSample, float maxSample)
+    {
+        MinimumHeight = minSample;
+        MaximumHeight = maxSample;
     }
 }

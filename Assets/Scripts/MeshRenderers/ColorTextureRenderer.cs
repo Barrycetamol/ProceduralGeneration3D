@@ -13,7 +13,6 @@ public struct ColorBand{
     public ColorBand(Color desiredColor, float desiredThreshold){
         color = desiredColor;
         threshold = desiredThreshold;
-
     }
 }
 
@@ -63,12 +62,4 @@ public class ColorTextureRenderer  : MonoBehaviour{
 
         return returnColor;
     }
-
-    public Color GenerateColorGradient(float noiseSample){
-        return new Color();
-    }
-
-    
-
-
 }
