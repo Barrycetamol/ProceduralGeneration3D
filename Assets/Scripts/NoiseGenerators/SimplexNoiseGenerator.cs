@@ -9,7 +9,6 @@ public class SimplexNoiseGenerator : NoiseGenerator
     [field: SerializeField] public float Persistance { get; set; }
     [field: SerializeField] public float Lacunarity { get; set; }
     [field: SerializeField] public float Scale { get; set; }
-    [field: SerializeField] public Vector2 NormalizationOffsets { get; set; }
 
     public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int gridMeshSize, bool useDeltaTime)
     {

@@ -15,7 +15,6 @@ public class PerlinNoiseGenerator : NoiseGenerator
     [field: SerializeField] public int Octaves {get; set;}
     [field: SerializeField] public float Lacunarity {get; set;}
     [field: SerializeField] public float Persistance {get; set;}
-    [field: SerializeField] public Vector2 NormalizationOffsets {get; set;}
 
     public PerlinNoiseGenerator(int seed, float scale, int xOffset, int yOffset, float lacunarity, int octaves, float persistance)
     {
@@ -72,14 +71,12 @@ public class PerlinNoiseGenerator : NoiseGenerator
             }
         }
 
-        // Consider optimising this section, since we have to loop it 3 times to get the value
+        // Consider optimising this section, since we have to loop an additional two times to get these values
         minimumNoiseSample = pixels.Min();
         maximumNoiseSample = pixels.Max();
 
         if(minimumNoiseSample == maximumNoiseSample) Debug.LogError("Noise generation didnt work. All pixel values were the same.");
-        Debug.Log($"Finished generating perlin noise.");
         return pixels;
-       
     }
 
 

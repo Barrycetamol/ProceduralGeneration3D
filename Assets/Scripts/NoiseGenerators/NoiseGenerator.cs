@@ -12,6 +12,8 @@ public abstract class NoiseGenerator : MonoBehaviour
     [field: SerializeField] public int XOffset {get; set;}
     [field: SerializeField] public int YOffset {get; set;}
     
+    [field: SerializeField] public Vector2 NormalizationOffsets { get; set; }
+    
     [field: Header("Debug information")]
     public float minimumNoiseSample = float.MaxValue;
     public float maximumNoiseSample = float.MinValue;

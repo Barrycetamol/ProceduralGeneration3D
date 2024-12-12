@@ -10,8 +10,6 @@ public class TerrainGenerator : MonoBehaviour
     [field: SerializeField] public Vector2Int GridSize { get; set; }
     [field: SerializeField] public Vector2Int GridResolution { get; set; }
     [field: SerializeField] public int MeshDetailLevel {get; set;}
-    [field: SerializeField] public float MaximumHeight;
-    [field: SerializeField] public float MinimumHeight;
     [field: SerializeField] public float MeshHeightMultiplyer;
     [field: SerializeField] public bool AutoUpdate;
     [field: SerializeField] public float SeaLevel { get; private set; }
@@ -20,6 +18,8 @@ public class TerrainGenerator : MonoBehaviour
     [field: SerializeField] public TerrainModifier HeightModifier;
     [field: SerializeField] public TerrainModifier ErosionModifier;
     [field: SerializeField] public TerrainModifier PeaksAndValleysModifier;
+    [field: SerializeField] public TerrainModifier CloudModifier;
+    [field: SerializeField] public TerrainModifier WindModifier;
     [field: SerializeField] public ColorTextureRenderer WaterColourBands {get; set;}
     [field: SerializeField] public ColorTextureRenderer LandColourBands { get; set; }
     [field: SerializeField] public ColorTextureRenderer CloudColourBands { get; set; }
@@ -30,6 +30,8 @@ public class TerrainGenerator : MonoBehaviour
     [field: SerializeField] public NoiseTextureRender ErosionNoiseTexture { get; set; }
     [field: SerializeField] public NoiseTextureRender PeaksAndValleysNoiseTexture { get; set; }
     [field: SerializeField] public NoiseTextureRender CombinedNoiseTexture { get; set; }
+    [field: SerializeField] public NoiseTextureRender CloudNoiseTexture { get; set; }
+    [field: SerializeField] public NoiseTextureRender WindNoiseTexture { get; set; }
     [field: SerializeField] public Vector2 CombinedMapNormalizationOffsets { get; set; }
 
     private List<Terrain> Terrains { get; set; } = new List<Terrain>();
@@ -125,17 +127,17 @@ public class TerrainGenerator : MonoBehaviour
             var noiseMapInfo = landTerrainMaps[terrain.m_Terrain.name];
             noiseMapInfo.heightSamples = new SampleInfo(
                     HeightModifier.NoiseGenerator.NormalizeSamples(
-                        landTerrainMaps[terrain.m_Terrain.name].heightSamples.noiseMap, minimum, maximum),
+                        noiseMapInfo.heightSamples.noiseMap, minimum, maximum),
                         minimum, maximum
             );
             noiseMapInfo.erosionSamples = new SampleInfo(
                     ErosionModifier.NoiseGenerator.NormalizeSamples(
-                        landTerrainMaps[terrain.m_Terrain.name].erosionSamples.noiseMap, minimum, maximum),
+                        noiseMapInfo.erosionSamples.noiseMap, minimum, maximum),
                         minimum, maximum
             );
             noiseMapInfo.PVsamples = new SampleInfo(
                     PeaksAndValleysModifier.NoiseGenerator.NormalizeSamples(
-                        landTerrainMaps[terrain.m_Terrain.name].PVsamples.noiseMap, minimum, maximum),
+                        noiseMapInfo.PVsamples.noiseMap, minimum, maximum),
                         minimum, maximum
             );
             float[] combinedValues = CombineMaps(GridResolution, noiseMapInfo);
@@ -202,17 +204,6 @@ public class TerrainGenerator : MonoBehaviour
         terrain.SetVertices(GenerateLandVertices(terrain.GridPosition, terrain.GridSize, samples));
 
         terrain.Refresh();
-    }
-
-    private float[] StripLandVertices(float[] landVertices)
-    {
-        List<float> processedNoise = new List<float>(landVertices.Length);
-        foreach (float landVertex in landVertices)
-        {
-            if (landVertex < CalculatedSeaLevel) processedNoise.Add(landVertex);
-        }
-
-        return processedNoise.ToArray();
     }
 
     private float[] NormalizeSamples(float[] combinedValues)

@@ -63,7 +63,7 @@ public class Terrain{
     public float MaximumHeight { get; private set; }
 
     /// <summary>
-    /// Constructor.
+    /// Adds a mesh filter and mesh renderer
     /// </summary>
     /// <param name="name">Name of our gameobject</param>
     /// <param name="width">Width of our mesh</param>
@@ -99,14 +99,16 @@ public class Terrain{
     /// <summary>
     /// Refreshes our Mesh instance. Must be after mesh updates.
     /// </summary>
-    public void Refresh(){
+    public void Refresh(){       
         Mesh.vertices = VertexList.ToArray();
         Mesh.colors = ColorList.ToArray();
         Mesh.triangles = TriangleList.ToArray();
+
         Mesh.RecalculateNormals();
         Mesh.RecalculateBounds();
 
         MeshFilter.mesh = Mesh;
+        
 
         if(IsWater){
             m_Terrain.AddComponent<GerstnerWaves>();
@@ -117,6 +119,7 @@ public class Terrain{
             }
         }
     }
+
 
     /// <summary>
     /// Clears our mesh data. Not including the mesh.
@@ -176,8 +179,7 @@ public class Terrain{
     private List<Color> GetColors(Vector3[,] Vertices, Vector2Int gridSize, float[] samples, ColorTextureRenderer colorBands, bool flat)
     {
         List<Color> colors = new List<Color>();
-        Debug.Log($"Vertices lengths: {Vertices.GetLength(1)}, {Vertices.GetLength(0)}  {Vertices.GetLength(0) * Vertices.GetLength(1)},  noiseSample length: {samples.Length}");
-        Debug.Log($"Minimum {MinimumHeight} -- maximum {MaximumHeight}");
+
         for (int i = 0; i < Vertices.GetLength(1); i++)
         {
             for (int j = 0; j < Vertices.GetLength(0); j++)
@@ -208,7 +210,6 @@ public class Terrain{
 
             }
         }
-        Debug.Log($"Color size: {colors.Count}, {Vertices.Length}");
         return colors;
     }
 

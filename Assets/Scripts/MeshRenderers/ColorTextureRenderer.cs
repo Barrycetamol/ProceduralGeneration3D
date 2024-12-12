@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.AI;
 
 [Serializable]
 public struct ColorBand{
@@ -35,7 +33,7 @@ public class ColorTextureRenderer  : MonoBehaviour{
         Colors = new Color[noiseSamples.GetLength(0)];
 
         for(int i = 0; i < noiseSamples.GetLength(0); i++){
-            Colors.Append(GenerateColor(noiseSamples[i], flat));
+            Colors[i] = GenerateColor(noiseSamples[i], flat);
         }  
 
         return Colors;
@@ -59,7 +57,6 @@ public class ColorTextureRenderer  : MonoBehaviour{
             prev_threshold = ColorBands[i].threshold;
             prev_color = ColorBands[i].color;
         }
-
         return returnColor;
     }
 }

@@ -11,7 +11,7 @@ public class GerstnerWaves : MonoBehaviour
     public float windStrength = 0.2f;                       // Strength of the wind influence
 
     public float waveHeight = 1.0f;
-    public float waveLength = 2.0f;
+    public float waveLength = 20.0f;
     public float waveSpeed = 1.0f;
 
     private MeshFilter meshFilter;

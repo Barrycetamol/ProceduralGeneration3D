@@ -3,13 +3,12 @@ using UnityEngine.UI;
 
 public class NoiseTextureRender : MonoBehaviour{
         private Renderer RenderTarget{get; set;}
-        private NoiseGenerator NoiseGenerator {get; set;}
-        private ColorTextureRenderer ColorTextureRenderer{get; set;}
 
         [field: SerializeField] public bool AutoUpdate{get; set;} = false;
         [field: SerializeField] public bool UseTimeOffset {get; set;} = false;
         [field: SerializeField] public bool WriteToImage {get; set;} = false;
         [field: SerializeField] public Image NoiseTarget {get; set;}
+        [field: SerializeField] public Texture2D StoredTexture {get; set;}
 
         void Start(){
             
@@ -17,7 +16,6 @@ public class NoiseTextureRender : MonoBehaviour{
             else GeneratePlane();
         }
         public void GeneratePlane(){
-            NoiseGenerator = GetComponent<NoiseGenerator>();
             RenderTarget = GetComponent<MeshRenderer>();
         }
 
@@ -43,6 +41,8 @@ public class NoiseTextureRender : MonoBehaviour{
 
             if(RenderTarget != null)RenderTarget.material.mainTexture = texture;
             if(WriteToImage) WriteTextureToImage(texture);
+
+            StoredTexture = texture;
 
         }
 
