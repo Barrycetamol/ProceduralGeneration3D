@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using Unity.VisualScripting;
 
-public class TerrainGenerator : MonoBehaviour
+public class WorldGenerator : MonoBehaviour
 {
     [field: Header("Base generation settings")]
     [field: SerializeField] public Vector2Int GridSize { get; set; }
@@ -33,6 +32,12 @@ public class TerrainGenerator : MonoBehaviour
     [field: SerializeField] public NoiseTextureRender CloudNoiseTexture { get; set; }
     [field: SerializeField] public NoiseTextureRender WindNoiseTexture { get; set; }
     [field: SerializeField] public Vector2 CombinedMapNormalizationOffsets { get; set; }
+
+    [field: Header("Player ")]
+    [field: SerializeField] public GameObject playerPrefab {get; set;}
+    [field: SerializeField] public Camera CameraToTrackPlayerWith {get; set;}
+
+    
 
     private List<Terrain> Terrains { get; set; } = new List<Terrain>();
     private List<Terrain> WaterTerrains { get; set; } = new List<Terrain>();
@@ -83,8 +88,17 @@ public class TerrainGenerator : MonoBehaviour
             }
         }
         GenerateWorld();
+        PlacePlayer();
     }
 
+    private void PlacePlayer()
+    {
+        GameObject player = Instantiate(playerPrefab);
+        player.GetComponent<BoatController>().StartingHeight = CalculatedSeaLevel;
+        var a = CameraToTrackPlayerWith.GetComponent<CameraController>();
+        a.boat = player.transform;
+
+    }
 
     private void GenerateWorld()
     {
@@ -126,19 +140,19 @@ public class TerrainGenerator : MonoBehaviour
         {
             var noiseMapInfo = landTerrainMaps[terrain.m_Terrain.name];
             noiseMapInfo.heightSamples = new SampleInfo(
-                    HeightModifier.NoiseGenerator.NormalizeSamples(
-                        noiseMapInfo.heightSamples.noiseMap, minimum, maximum),
-                        minimum, maximum
+                                            HeightModifier.NoiseGenerator.NormalizeSamples(noiseMapInfo.heightSamples.noiseMap, 
+                                                                                           minimum, maximum),
+                                            minimum, maximum
             );
             noiseMapInfo.erosionSamples = new SampleInfo(
-                    ErosionModifier.NoiseGenerator.NormalizeSamples(
-                        noiseMapInfo.erosionSamples.noiseMap, minimum, maximum),
-                        minimum, maximum
+                                            ErosionModifier.NoiseGenerator.NormalizeSamples(noiseMapInfo.erosionSamples.noiseMap, 
+                                                                                            minimum, maximum),
+                                            minimum, maximum
             );
             noiseMapInfo.PVsamples = new SampleInfo(
-                    PeaksAndValleysModifier.NoiseGenerator.NormalizeSamples(
-                        noiseMapInfo.PVsamples.noiseMap, minimum, maximum),
-                        minimum, maximum
+                                        PeaksAndValleysModifier.NoiseGenerator.NormalizeSamples(noiseMapInfo.PVsamples.noiseMap, 
+                                                                                                minimum, maximum),
+                                        minimum, maximum
             );
             float[] combinedValues = CombineMaps(GridResolution, noiseMapInfo);
             noiseMapInfo.CombinedValues = new SampleInfo(NormalizeSamples(combinedValues), combinedValues.Min(), combinedValues.Max());
@@ -165,12 +179,11 @@ public class TerrainGenerator : MonoBehaviour
 
         // From terrain, add water
         //generate water
-
+        Shader.SetGlobalFloat("_StartTime", Time.time);  // to sync the wave shaders start time.
         foreach (Terrain waterTerrain in WaterTerrains)
         {
             GenerateWater(waterTerrain, waterTerrainMaps[waterTerrain.m_Terrain.name]);
         }
-
     }
 
     private void GenerateWater(Terrain terrain, float[] vertices)

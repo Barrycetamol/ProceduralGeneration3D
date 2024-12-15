@@ -2,7 +2,7 @@ Shader "Custom/GerstnerWaves"
 {
     Properties
     {
-        _BaseColor ("Base Color", Color) = (0.0, 0.5, 1.0, 1.0)
+        _BaseColor ("Base Color", Color) = (0.0, 0.4, 0.7, 1.0) // Soft blue for water
         _WaveCount ("Wave Count", Float) = 3
         _WaveDirections ("Wave Directions", Vector) = (1.0, 0.5, 0.2, 0.0)
         _WaveFrequencies ("Wave Frequencies", Vector) = (0.8, 0.5, 0.0, 0.0)
@@ -11,16 +11,12 @@ Shader "Custom/GerstnerWaves"
         _WaveLength ("Wave Length", Float) = 20.0
         _WindDirection ("Wind Direction", Vector) = (1.0, 0.5, 0.0, 0.0)
         _WindStrength ("Wind Strength", Float) = 0.2
-
-        // Color banding properties
-        _ColorBands ("Color Bands", Color)[] = {}
-        _Thresholds ("Thresholds", Float)[] = {}
-        _BandCount ("Band Count", Float) = 4
+        _StartingHeight("Starting Height", Float) = 1.0
     }
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Transparent" }
         LOD 200
 
         Pass
@@ -52,26 +48,21 @@ Shader "Custom/GerstnerWaves"
             float _WaveLength;
             float4 _WindDirection;
             float _WindStrength;
+            float _StartingHeight;
+            float _StartTime;
 
             float4 _BaseColor;
-            float4 _ColorBands[10]; // Max 10 bands for simplicity
-            float _Thresholds[10];
-            float _BandCount;
 
             v2f vert(appdata v)
             {
                 v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
-                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-                o.normal = normalize(mul((float3x3)unity_ObjectToWorld, v.normal));
-
-                // Gerstner wave calculations
-                float3 position = o.worldPos;
+                float3 position = v.vertex.xyz;
                 float y = 0.0;
 
                 float2 windDir = normalize(_WindDirection.xy) * _WindStrength;
 
-                for (int i = 0; i < 4; i++) // Up to 4 waves (can be adjusted)
+                // Gerstner wave calculations
+                for (int i = 0; i < _WaveCount; i++)
                 {
                     float2 waveDir = normalize(float2(_WaveDirections[i], _WaveDirections[(i + 1) % 4]));
                     waveDir += windDir;
@@ -91,24 +82,55 @@ Shader "Custom/GerstnerWaves"
                 }
 
                 position.y += y;
+                o.worldPos = position;
                 o.pos = UnityObjectToClipPos(float4(position, 1.0));
+                o.normal = normalize(mul((float3x3)unity_ObjectToWorld, v.normal)); // Adjust normals
 
                 return o;
             }
 
             fixed4 frag(v2f i) : SV_Target
             {
-                // Color banding based on height
-                float height = i.worldPos.y;
-                fixed4 color = _BaseColor;
+                // Dynamically calculate the height range based on wave amplitudes
+                float maxAmplitude = max(max(_WaveAmplitudes.x, _WaveAmplitudes.y), _WaveAmplitudes.z);
+                float minHeight = _StartingHeight - maxAmplitude;
+                float maxHeight = _StartingHeight + maxAmplitude;
 
-                for (int j = 0; j < _BandCount; j++)
+                // Lerp i.worldPos.y between minHeight and maxHeight
+                float height = lerp(minHeight, maxHeight, saturate((i.worldPos.y - minHeight) / (maxHeight - minHeight)));
+
+                // Normalize height to a 0-1 range
+                float normalizedHeight = saturate((height - minHeight) / (maxHeight - minHeight));
+
+                // Define multiple color bands
+                fixed4 band1 = fixed4(0.0, 0.1, 0.5, 0.1); // Deep blue
+                fixed4 band2 = fixed4(0.0, 0.3, 0.8, 0.1); // Mid blue
+                fixed4 band3 = fixed4(0.5, 0.5, 1.0, 0.1); // Light blue
+                fixed4 band4 = fixed4(0.8, 0.8, 1.0, 0.1); // Surface reflection
+
+                // Define thresholds for blending
+                float threshold1 = 0.8;
+                float threshold2 = 1.0;
+
+                // Determine the correct color band based on normalized height
+                fixed4 color;
+                if (normalizedHeight < threshold1)
                 {
-                    if (height <= _Thresholds[j])
-                    {
-                        color = _ColorBands[j];
-                        break;
-                    }
+                    // Blend between band1 and band2
+                    float t = saturate(normalizedHeight / threshold1);
+                    color = lerp(band1, band2, t);
+                }
+                else if (normalizedHeight < threshold2)
+                {
+                    // Blend between band2 and band3
+                    float t = saturate((normalizedHeight - threshold1) / (threshold2 - threshold1));
+                    color = lerp(band2, band3, t);
+                }
+                else
+                {
+                    // Blend between band3 and band4
+                    float t = saturate((normalizedHeight - threshold2) / (1.0 - threshold2));
+                    color = lerp(band3, band4, t);
                 }
 
                 return color;

@@ -26,6 +26,8 @@ public class Terrain{
     /// m_Terrain's MeshFilter
     /// </summary>
     private MeshFilter MeshFilter { get; set; }
+    
+    private MeshCollider MeshCollider {get; set;}
 
     /// <summary>
     /// The mesh to display
@@ -80,9 +82,13 @@ public class Terrain{
         m_Terrain = new GameObject(name);
         m_Terrain.transform.position = new Vector3(GridPosition.x * (GridSize.x - 1), 0, GridPosition.y * (GridSize.y - 1));
 
+        if(isWater) m_Terrain.transform.parent = GameObject.FindGameObjectWithTag("Water").gameObject.transform;
+        else m_Terrain.transform.parent = GameObject.FindGameObjectWithTag("Land").gameObject.transform;
+
         Mesh = new Mesh();
         MeshRenderer = m_Terrain.AddComponent<MeshRenderer>();
-        MeshFilter= m_Terrain.AddComponent<MeshFilter>();
+        MeshFilter = m_Terrain.AddComponent<MeshFilter>();
+        MeshCollider = m_Terrain.AddComponent<MeshCollider>();
         Mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
         MeshRenderer.material = new Material(Shader.Find("Custom/VertexColorShader"));
@@ -115,9 +121,15 @@ public class Terrain{
             GerstnerWaves waves;
             m_Terrain.TryGetComponent<GerstnerWaves>(out waves);
             if(waves){
+                waves.SetDefaultHeight(Mesh.vertices[0]);
                 waves.AddColorBand(ColorBand);
+
             }
         }
+        else{
+            MeshCollider.sharedMesh = Mesh;
+        }
+
     }
 
 

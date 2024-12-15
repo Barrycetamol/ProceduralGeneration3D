@@ -1,10 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CloudGenerator : MonoBehaviour
@@ -19,7 +13,6 @@ public class CloudGenerator : MonoBehaviour
 
     void Start(){
         skyTexture = new Texture2D(NoiseSampleSize.x, NoiseSampleSize.y, TextureFormat.RGBA32, false);
-        //InvokeRepeating("GenerateClouds", 0, 2.0f);
     }
 
     void Update(){
@@ -59,8 +52,9 @@ public class CloudGenerator : MonoBehaviour
             skyTexture.Apply();
             skybox.SetTexture("_MainTex", skyTexture);
 
-            byte[] bytes = skyTexture.EncodeToPNG();
-            System.IO.File.WriteAllBytes(Application.dataPath + "/GeneratedSky.png", bytes);
+            // Write to Filesystem
+            // byte[] bytes = skyTexture.EncodeToPNG();
+            // System.IO.File.WriteAllBytes(Application.dataPath + "/GeneratedSky.png", bytes);
         }
     }
 }

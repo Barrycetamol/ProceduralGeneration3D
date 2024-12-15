@@ -11,6 +11,7 @@ public abstract class NoiseGenerator : MonoBehaviour
     [field: SerializeField] public int Seed { get; set; }
     [field: SerializeField] public int XOffset {get; set;}
     [field: SerializeField] public int YOffset {get; set;}
+    [field: SerializeField] public float TimeMultiplier {get; set;} = 1.0f;
     
     [field: SerializeField] public Vector2 NormalizationOffsets { get; set; }
     
@@ -26,7 +27,8 @@ public abstract class NoiseGenerator : MonoBehaviour
     }
 
     void Update(){
-        timePassed += UnityEngine.Time.deltaTime;
+        TimeMultiplier = Mathf.Clamp(TimeMultiplier, 0.01f, 100.0f);
+        timePassed += UnityEngine.Time.deltaTime * TimeMultiplier;
     }
 
 }
