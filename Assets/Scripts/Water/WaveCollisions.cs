@@ -5,14 +5,22 @@ public class WaveCollision : MonoBehaviour
     public float waveLength = 20.0f;
     public Vector4[] waveDirectionsAndAmplitudes; // (directionX, directionZ, amplitude, unused)
     public Vector2[] waveFrequenciesAndSpeeds;   // (frequency, speed
-    public float windStrength = 0.2f;
     public Vector2 windDirection = new Vector2(1.0f, 0.5f);
+
+    public WindGeneration WindGeneration{get;set;}
+
+    void Start(){
+        WindGeneration = GameObject.FindGameObjectWithTag("Wind").GetComponent<WindGeneration>();
+    }
 
     public float GetWaveHeight(Vector3 position, float time)
     {
-        float height = 0.0f;
-        Vector2 windDir = windDirection.normalized * windStrength;
 
+        Vector2Int pos = new Vector2Int((int)position.x, (int)position.z);
+        Wind wind = WindGeneration.GetWind(pos);
+        Vector2 windDir = wind.windDirection.normalized * wind.windStrength;
+        
+        float height = 0.0f;
         for (int i = 0; i < waveDirectionsAndAmplitudes.Length; i++)
         {
             Vector2 waveDir = new Vector2(waveDirectionsAndAmplitudes[i].x, waveDirectionsAndAmplitudes[i].y).normalized;
@@ -43,10 +51,5 @@ public class WaveCollision : MonoBehaviour
 
         Vector3 normal = new Vector3(heightX1 - heightX2, 2 * delta, heightZ1 - heightZ2).normalized;
         return normal;
-    }
-
-    public void SetWind(Vector2 direction, float speed){
-        windDirection = direction;
-        windStrength = speed;
     }
 }

@@ -36,6 +36,7 @@ public class WorldGenerator : MonoBehaviour
     [field: Header("Player ")]
     [field: SerializeField] public GameObject playerPrefab {get; set;}
     [field: SerializeField] public Camera CameraToTrackPlayerWith {get; set;}
+    private GameObject player;
 
     
 
@@ -93,7 +94,8 @@ public class WorldGenerator : MonoBehaviour
 
     private void PlacePlayer()
     {
-        GameObject player = Instantiate(playerPrefab);
+        if(player != null) Destroy(player);
+        player = Instantiate(playerPrefab);
         player.GetComponent<BoatController>().StartingHeight = CalculatedSeaLevel;
         var a = CameraToTrackPlayerWith.GetComponent<CameraController>();
         a.boat = player.transform;

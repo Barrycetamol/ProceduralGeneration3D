@@ -1,8 +1,3 @@
-
-
-using System;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 
 public abstract class NoiseGenerator : MonoBehaviour
@@ -22,8 +17,8 @@ public abstract class NoiseGenerator : MonoBehaviour
 
     public abstract float[] GetNoiseSamples(Vector2Int offsets, Vector2Int sampleSize, bool useDeltaTime);
     public abstract float[] NormalizeSamples(float[] pixels, float minimum, float maximum);
-    public float GetNoiseSample(Vector2Int offsets, Vector2Int sampleSize, bool useDeltaTime){
-        return GetNoiseSamples(offsets, sampleSize, useDeltaTime)[0];
+    public float GetNoiseSample(Vector2Int offsets, bool useDeltaTime){
+        return GetNoiseSamples(offsets, new Vector2Int(1, 1), useDeltaTime)[0];
     }
 
     void Update(){

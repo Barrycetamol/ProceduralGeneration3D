@@ -75,7 +75,6 @@ public class PerlinNoiseGenerator : NoiseGenerator
         minimumNoiseSample = pixels.Min();
         maximumNoiseSample = pixels.Max();
 
-        if(minimumNoiseSample == maximumNoiseSample) Debug.LogError("Noise generation didnt work. All pixel values were the same.");
         return pixels;
     }
 
