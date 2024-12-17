@@ -905,9 +905,10 @@ Transform:
   m_Children:
   - {fileID: 45075233}
   - {fileID: 1708522374}
-  - {fileID: 2054131564}
-  - {fileID: 2005161090}
   - {fileID: 1158723633}
+  - {fileID: 2054131564}
+  - {fileID: 1672032170}
+  - {fileID: 512178256}
   m_Father: {fileID: 1590696375}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &428266236
@@ -1058,6 +1059,61 @@ MonoBehaviour:
   <WriteToImage>k__BackingField: 1
   <NoiseTarget>k__BackingField: {fileID: 1536083074}
   <StoredTexture>k__BackingField: {fileID: 0}
+--- !u!1 &512178255
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 512178256}
+  - component: {fileID: 512178257}
+  m_Layer: 0
+  m_Name: WindStrength
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &512178256
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 512178255}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -120.13475, y: -98.3327, z: -92.08725}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 279853811}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &512178257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 512178255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06289b616027a1c4cba2c3deac3c07d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Seed>k__BackingField: 0
+  <XOffset>k__BackingField: 0
+  <YOffset>k__BackingField: 0
+  <TimeMultiplier>k__BackingField: 1
+  <NormalizationOffsets>k__BackingField: {x: 0, y: 0}
+  minimumNoiseSample: 3.4028235e+38
+  maximumNoiseSample: -3.4028235e+38
+  <Octaves>k__BackingField: 8
+  <Persistance>k__BackingField: 0.5
+  <Lacunarity>k__BackingField: 2
+  <Scale>k__BackingField: 50
 --- !u!1 &512756260
 GameObject:
   m_ObjectHideFlags: 0
@@ -1451,11 +1507,12 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1056618947}
-  - {fileID: 1675746171}
   - {fileID: 1739440805}
   - {fileID: 1515422839}
   - {fileID: 644351080}
+  - {fileID: 1056618947}
+  - {fileID: 892191760}
+  - {fileID: 1675746171}
   m_Father: {fileID: 1590696375}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &821818025
@@ -1470,7 +1527,7 @@ GameObject:
   - component: {fileID: 821818027}
   m_Layer: 0
   m_Name: Wind
-  m_TagString: Untagged
+  m_TagString: Wind
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1502,7 +1559,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a4aa3c0ff2fd5449bd3d98cae86c3e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <NoiseGenerator>k__BackingField: {fileID: 2005161091}
+  <WindDirectionNoiseGenerator>k__BackingField: {fileID: 1056618948}
+  <WindStrengthNoiseGenerator>k__BackingField: {fileID: 892191759}
+  <WindSpeedMultiplier>k__BackingField: 1
+  <WindSpeed>k__BackingField: {x: 0, y: 0}
+  <WindDirection>k__BackingField: {x: 0, y: 0}
+  <WindTimeOffsets>k__BackingField: {x: 0, y: 0}
 --- !u!1 &844991707
 GameObject:
   m_ObjectHideFlags: 0
@@ -1852,6 +1914,61 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &892191758
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 892191760}
+  - component: {fileID: 892191759}
+  m_Layer: 0
+  m_Name: WindStrength
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &892191759
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 892191758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e20cc2f95b2939b45b0140f47fe2e329, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Seed>k__BackingField: 0
+  <XOffset>k__BackingField: 0
+  <YOffset>k__BackingField: 0
+  <TimeMultiplier>k__BackingField: 0
+  <NormalizationOffsets>k__BackingField: {x: 0, y: 0}
+  minimumNoiseSample: 0
+  maximumNoiseSample: 0
+  <Scale>k__BackingField: 0
+  <Octaves>k__BackingField: 0
+  <Lacunarity>k__BackingField: 0
+  <Persistance>k__BackingField: 0
+--- !u!4 &892191760
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 892191758}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -120.13475, y: -98.3327, z: -92.08725}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 818170598}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -2358,7 +2475,7 @@ GameObject:
   - component: {fileID: 1056618947}
   - component: {fileID: 1056618948}
   m_Layer: 0
-  m_Name: Wind
+  m_Name: WindDirection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3158,6 +3275,61 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1672032169
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1672032170}
+  - component: {fileID: 1672032171}
+  m_Layer: 0
+  m_Name: WindDirection
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1672032170
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1672032169}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -120.13475, y: -98.3327, z: -92.08725}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 279853811}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1672032171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1672032169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06289b616027a1c4cba2c3deac3c07d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Seed>k__BackingField: 0
+  <XOffset>k__BackingField: 0
+  <YOffset>k__BackingField: 0
+  <TimeMultiplier>k__BackingField: 1
+  <NormalizationOffsets>k__BackingField: {x: 0, y: 0}
+  minimumNoiseSample: 3.4028235e+38
+  maximumNoiseSample: -3.4028235e+38
+  <Octaves>k__BackingField: 0
+  <Persistance>k__BackingField: 0
+  <Lacunarity>k__BackingField: 0
+  <Scale>k__BackingField: 0
 --- !u!1 &1675746170
 GameObject:
   m_ObjectHideFlags: 0
@@ -4106,61 +4278,6 @@ MonoBehaviour:
   <WriteToImage>k__BackingField: 1
   <NoiseTarget>k__BackingField: {fileID: 964160767}
   <StoredTexture>k__BackingField: {fileID: 0}
---- !u!1 &2005161089
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2005161090}
-  - component: {fileID: 2005161091}
-  m_Layer: 0
-  m_Name: Wind
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2005161090
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2005161089}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -120.13475, y: -98.3327, z: -92.08725}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 279853811}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2005161091
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2005161089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06289b616027a1c4cba2c3deac3c07d5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <Seed>k__BackingField: 0
-  <XOffset>k__BackingField: 0
-  <YOffset>k__BackingField: 0
-  <TimeMultiplier>k__BackingField: 1
-  <NormalizationOffsets>k__BackingField: {x: 1, y: 1}
-  minimumNoiseSample: 3.4028235e+38
-  maximumNoiseSample: -3.4028235e+38
-  <Octaves>k__BackingField: 3
-  <Persistance>k__BackingField: 0.4
-  <Lacunarity>k__BackingField: 2
-  <Scale>k__BackingField: 100
 --- !u!1 &2022471016
 GameObject:
   m_ObjectHideFlags: 0

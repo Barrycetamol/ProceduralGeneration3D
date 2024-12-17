@@ -2,36 +2,34 @@ using UnityEngine;
 
 public class WaveCollision : MonoBehaviour
 {
-    public float waveLength = 20.0f;
-    public Vector4[] waveDirectionsAndAmplitudes; // (directionX, directionZ, amplitude, unused)
-    public Vector2[] waveFrequenciesAndSpeeds;   // (frequency, speed
-    public Vector2 windDirection = new Vector2(1.0f, 0.5f);
-
-    public WindGeneration WindGeneration{get;set;}
+    [field: SerializeField] public WindGeneration WindGeneration{get;set;}
+    [field: SerializeField] public GerstnerWaves GerstnerWaves {get; set;}
 
     void Start(){
         WindGeneration = GameObject.FindGameObjectWithTag("Wind").GetComponent<WindGeneration>();
+        GerstnerWaves = GameObject.FindGameObjectWithTag("Water").GetComponentsInChildren<GerstnerWaves>()[0];  // This will need to be changed for tiled maps.
     }
 
     public float GetWaveHeight(Vector3 position, float time)
     {
+        if(GerstnerWaves == null) return 0.0f;
 
         Vector2Int pos = new Vector2Int((int)position.x, (int)position.z);
         Wind wind = WindGeneration.GetWind(pos);
         Vector2 windDir = wind.windDirection.normalized * wind.windStrength;
         
         float height = 0.0f;
-        for (int i = 0; i < waveDirectionsAndAmplitudes.Length; i++)
+        for (int i = 0; i < GerstnerWaves.waveCount; i++)
         {
-            Vector2 waveDir = new Vector2(waveDirectionsAndAmplitudes[i].x, waveDirectionsAndAmplitudes[i].y).normalized;
+            Vector2 waveDir = new Vector2(GerstnerWaves.directionsX[i], GerstnerWaves.directionsY[i]).normalized;
             waveDir += windDir;
             waveDir = waveDir.normalized;
 
-            float amplitude = waveDirectionsAndAmplitudes[i].z;
-            float frequency = waveFrequenciesAndSpeeds[i].x;
-            float speed = waveFrequenciesAndSpeeds[i].y;
+            float amplitude = GerstnerWaves.amplitudes[i];
+            float frequency = GerstnerWaves.frequencies[i];
+            float speed = GerstnerWaves.speeds[i];
 
-            float k = 2.0f * Mathf.PI / waveLength;
+            float k = 2.0f * Mathf.PI / GerstnerWaves.WaveLength;
             float w = frequency * k;
 
             float phase = w * time * speed;

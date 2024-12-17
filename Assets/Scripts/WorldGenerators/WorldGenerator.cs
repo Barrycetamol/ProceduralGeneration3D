@@ -98,7 +98,7 @@ public class WorldGenerator : MonoBehaviour
         player = Instantiate(playerPrefab);
         player.GetComponent<BoatController>().StartingHeight = CalculatedSeaLevel;
         var a = CameraToTrackPlayerWith.GetComponent<CameraController>();
-        a.boat = player.transform;
+        a.boat = player.GetComponent<BoatController>().focalPoint.transform;
 
     }
 

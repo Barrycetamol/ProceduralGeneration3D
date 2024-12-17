@@ -19,8 +19,8 @@ public class WindGeneration : MonoBehaviour
     
     public Wind GetWind(Vector2Int position)
     {
-        var windspeed = WindStrengthNoiseGenerator.GetNoiseSample(position, true);
-        var windDirection = WindDirectionNoiseGenerator.GetNoiseSample(position, true);
+        var windspeed = WindStrengthNoiseGenerator.GetNoiseSample(position, false);
+        var windDirection = WindDirectionNoiseGenerator.GetNoiseSample(position, false);
 
         WindSpeed = new Vector2(windspeed * WindSpeedMultiplier, windspeed * WindSpeedMultiplier);
         WindDirection = new Vector2(windDirection, windDirection);
@@ -28,6 +28,16 @@ public class WindGeneration : MonoBehaviour
         Wind wind = new(WindSpeed, WindDirection);
 
         return wind;
+    }
+
+    void Start(){
+        InvokeRepeating("RandomWindChange", 0, 0.5f);
+    }
+
+    void RandomWindChange(){
+        var rand = UnityEngine.Random.Range(0, 2);
+        if(rand == 0) WindSpeedMultiplier -= 1;
+        if(rand == 1) WindSpeedMultiplier += 1;
     }
 }
 

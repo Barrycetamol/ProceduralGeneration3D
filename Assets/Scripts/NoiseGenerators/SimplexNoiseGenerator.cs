@@ -13,7 +13,6 @@ public class SimplexNoiseGenerator : NoiseGenerator
     public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int gridMeshSize, bool useDeltaTime)
     {
         float[] pixels = new float[gridMeshSize.x *  gridMeshSize.y];
-        Debug.Log($"Size of pixels in noise generation: {pixels.Length}");
 
         float chunkXoffset = offsets.x * (gridMeshSize.x - 1) + XOffset;
         float chunkYoffset = offsets.y * (gridMeshSize.y - 1) + YOffset;
@@ -50,7 +49,6 @@ public class SimplexNoiseGenerator : NoiseGenerator
         maximumNoiseSample = pixels.Max();
 
         if(minimumNoiseSample == maximumNoiseSample) Debug.LogError("Noise generation didnt work. All pixel values were the same.");
-        Debug.Log($"Finished generating perlin noise.");
         return pixels;
     }
 

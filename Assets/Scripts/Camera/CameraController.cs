@@ -15,5 +15,11 @@ public class CameraController : MonoBehaviour
         var pos = boat.position + boat.TransformDirection(offset);
         pos.y = 12.75f + offset.y;
         transform.position = pos;
+
+        var direction = boat.position - transform.position;
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+
+        // Smoothly rotate the camera toward the target
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
     }
 }

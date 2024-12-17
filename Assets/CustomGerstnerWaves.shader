@@ -4,7 +4,8 @@ Shader "Custom/GerstnerWaves"
     {
         _BaseColor ("Base Color", Color) = (0.0, 0.4, 0.7, 1.0) // Soft blue for water
         _WaveCount ("Wave Count", Float) = 3
-        _WaveDirections ("Wave Directions", Vector) = (1.0, 0.5, 0.2, 0.0)
+        _WaveDirectionX ("Wave DirectionX", Vector) = (0.0, 0.0, 0.0, 0.0)
+        _WaveDirectionY ("Wave DirectionX", Vector) = (0.0, 0.0, 0.0, 0.0)
         _WaveFrequencies ("Wave Frequencies", Vector) = (0.8, 0.5, 0.0, 0.0)
         _WaveAmplitudes ("Wave Amplitudes", Vector) = (0.2, 0.15, 0.1, 0.0)
         _WaveSpeeds ("Wave Speeds", Vector) = (0.5, 0.6, 0.4, 0.0)
@@ -41,7 +42,8 @@ Shader "Custom/GerstnerWaves"
             };
 
             float _WaveCount;
-            float4 _WaveDirections;
+            float4 _WaveDirectionX;
+            float4 _WaveDirectionY;
             float4 _WaveFrequencies;
             float4 _WaveAmplitudes;
             float4 _WaveSpeeds;
@@ -64,7 +66,7 @@ Shader "Custom/GerstnerWaves"
                 // Gerstner wave calculations
                 for (int i = 0; i < _WaveCount; i++)
                 {
-                    float2 waveDir = normalize(float2(_WaveDirections[i], _WaveDirections[(i + 1) % 4]));
+                    float2 waveDir = normalize(float2(_WaveDirectionX[i], _WaveDirectionY[i]));
                     waveDir += windDir;
                     waveDir = normalize(waveDir);
 
