@@ -110,6 +110,9 @@ public class WorldGenerator : MonoBehaviour
         GenerateWorld();
     }
 
+    /// <summary>
+    /// Places player in the world
+    /// </summary>
     public void PlacePlayer()
     {
         RemovePlayer();
@@ -120,10 +123,17 @@ public class WorldGenerator : MonoBehaviour
         a.boat = player.transform;
     }
 
+    /// <summary>
+    /// Removes player if it exists
+    /// </summary>
     public void RemovePlayer(){
         if(player != null) Destroy(player);
     }
 
+
+    /// <summary>
+    /// The main world generation function
+    /// </summary>
     private void GenerateWorld()
     {
         LandColourBands.SortColorBands();
@@ -211,6 +221,11 @@ public class WorldGenerator : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// generates water terrains
+    /// </summary>
+    /// <param name="terrain"></param>
+    /// <param name="vertices"></param>
     private void GenerateWater(Terrain terrain, float[] vertices)
     {
         terrain.Clear();
@@ -219,6 +234,11 @@ public class WorldGenerator : MonoBehaviour
         terrain.Refresh();
     }
 
+    /// <summary>
+    /// Generates the water vertices at the stored sealevel
+    /// </summary>
+    /// <param name="gridSize">grid size resolution</param>
+    /// <returns>water vertices</returns>
     private Vector3[,] GenerateWaterVertices(Vector2Int gridSize)
     {
         Vector3[,] vertices = new Vector3[gridSize.x * MeshDetailLevel, gridSize.y * MeshDetailLevel];
@@ -234,6 +254,11 @@ public class WorldGenerator : MonoBehaviour
         return vertices;
     }
 
+    /// <summary>
+    /// Generates terrain given the noise samples
+    /// </summary>
+    /// <param name="terrain">current terrain to generate vertices for</param>
+    /// <param name="samples">noise info</param>
     private void GenerateTerrain(Terrain terrain, NoiseMapInfo samples)
     {
         terrain.Clear();
@@ -245,6 +270,10 @@ public class WorldGenerator : MonoBehaviour
         AddObjects(samples);
     }
 
+    /// <summary>
+    /// Add objects to map using Poisson disc sampling
+    /// </summary>
+    /// <param name="samples">noise map samples</param>
     private void AddObjects(NoiseMapInfo samples)
     {
         Points = PoissonDiscSampling.GeneratePoints(50, GridResolution, 20, new Vector2(0.3f, 0.7f), samples.CombinedValues.noiseMap, MeshHeightMultiplyer);
@@ -284,6 +313,10 @@ public class WorldGenerator : MonoBehaviour
         return newValues;
     }
 
+    /// <summary>
+    /// Writes to a debug texture (NoiseTextureRenderers)
+    /// </summary>
+    /// <param name="noiseMapInfo">noise map sample info</param>
     private void WriteDebugTextures(NoiseMapInfo noiseMapInfo)
     {
         HeightNoiseTexture.WritePixelsToRenderTarget(noiseMapInfo.heightSamples.noiseMap, GridResolution);
@@ -292,6 +325,12 @@ public class WorldGenerator : MonoBehaviour
         CombinedNoiseTexture.WritePixelsToRenderTarget(noiseMapInfo.CombinedValues.noiseMap, GridResolution);
     }
 
+    /// <summary>
+    /// Checks if the generated noise maps are different from one another, helper function to test generations are different per grid piece
+    /// </summary>
+    /// <param name="noiseMaps">Dictionary of terrain name and its noisemap</param>
+    /// <param name="terrains">list of terrains to check against</param>
+    /// <returns></returns>
     private bool CheckNoiseMapsAreDifferent(Dictionary<string, NoiseMapInfo> noiseMaps, List<Terrain> terrains)
     {
         bool isDifferent = true;
@@ -323,6 +362,12 @@ public class WorldGenerator : MonoBehaviour
         return isDifferent;
     }
 
+    /// <summary>
+    /// Combines maps together using the PerformHeightCalculation
+    /// </summary>
+    /// <param name="gridSize">grid piece resolution</param>
+    /// <param name="samples">noise map samples to combine together</param>
+    /// <returns>the combined noise map</returns>
     private float[] CombineMaps(Vector2Int gridSize, NoiseMapInfo samples)
     {
         float[] combinedMap = new float[gridSize.x * gridSize.y];
@@ -341,7 +386,13 @@ public class WorldGenerator : MonoBehaviour
     }
 
 
-
+    /// <summary>
+    /// Generates vertices based on the gridSize, samples and meshdetaillevel
+    /// </summary>
+    /// <param name="gridPosition">(UNUSED NEEDS REFACTOR)</param>
+    /// <param name="gridSize">grid piece resolution </param>
+    /// <param name="samples">noise map samples</param>
+    /// <returns>vertices as a multidemensional array</returns>
     private Vector3[,] GenerateLandVertices(Vector2Int gridPosition, Vector2Int gridSize, NoiseMapInfo samples)
     {
         Vector3[,] vertices = new Vector3[gridSize.x * MeshDetailLevel, gridSize.y * MeshDetailLevel];
@@ -359,6 +410,13 @@ public class WorldGenerator : MonoBehaviour
         return vertices;
     }
 
+    /// <summary>
+    /// Noisesample combination calculation. Adds together and clamps between 0 and 1;
+    /// </summary>
+    /// <param name="height">any noise sample</param>
+    /// <param name="erosion">any noise sample</param>
+    /// <param name="pv">any noise sample</param>
+    /// <returns>combined sample</returns>
     private float PerformHeightCalculation(float height, float erosion, float pv)
     {
         return Mathf.Clamp01(HeightModifier.GetNoiseFromCurve(height) +

@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Handles all the menus
+/// </summary>
 public class UserInterface : MonoBehaviour
 {
     public GameObject MainMenu;
@@ -74,6 +77,9 @@ public class UserInterface : MonoBehaviour
         CurrentState = State.GenerationOptions;
     }
 
+    /// <summary>
+    /// Function starts the generation using hardcoded defaults
+    /// </summary>
     public void UseDefaultGeneration(){
         // var height = new NoiseSettings(0, 4, 100, 0.5f, 2, NoiseType.SIMPLEX);
         // var erosion = new NoiseSettings(0, 4, 100, 0.5f, 2, NoiseType.SIMPLEX);
@@ -104,15 +110,17 @@ public class UserInterface : MonoBehaviour
         StartGenerating();
     }
 
-    public void UseUserSettingsGeneration(){
-        
-    }
-
+    /// <summary>
+    /// Starts the gameplay
+    /// </summary>
     public void PlayGeneration(){
         CurrentState = State.Game;
         WorldGenerator.GetComponent<WorldGenerator>().PlacePlayer();
     }
 
+    /// <summary>
+    /// Randomises the current seed between 0 and 5000 after 
+    /// </summary>
     public void NewGeneration(){
         Height.GetComponent<SettingGatherer>().noiseSettings.seed = UnityEngine.Random.Range(0, 5000);
         Erosion.GetComponent<SettingGatherer>().noiseSettings.seed = UnityEngine.Random.Range(0, 5000);

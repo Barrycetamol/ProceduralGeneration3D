@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Stores settings from the generation menu
+/// </summary>
 public class SettingGatherer : MonoBehaviour
 {
     [field: SerializeField] public NoiseSettings noiseSettings;

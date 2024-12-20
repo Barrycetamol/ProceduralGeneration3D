@@ -1,6 +1,8 @@
 using UnityEngine;
 
-
+/// <summary>
+/// Base class for modifiers. See terrain modifier for an example
+/// </summary>
 public abstract class Modifier : MonoBehaviour{
 
     [field: SerializeField] public AnimationCurve Curve;

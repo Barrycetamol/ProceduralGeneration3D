@@ -1,14 +1,44 @@
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Cloud generation class. Writes noise data to texture based on colour band given
+/// </summary>
 public class CloudGenerator : MonoBehaviour
 {
+    /// <summary>
+    /// any noise generator
+    /// </summary>
     [field: SerializeField] public NoiseGenerator noiseGenerator {get; set;}
+
+    /// <summary>
+    /// THe colour bands to apply to the clouds
+    /// </summary>
     [field: SerializeField] public ColorTextureRenderer ColorBands {get; set;}
+
+    /// <summary>
+    /// wind direction obtained from WindGenerator
+    /// </summary>
     [field: SerializeField] public Vector2 WindDirection{get; set;}
+
+    /// <summary>
+    /// wind strength obtained from WindGenerator
+    /// </summary>
     [field: SerializeField] public Vector2 WindSpeed {get; set;}
+
+    /// <summary>
+    /// A separate debug texture renderer
+    /// </summary>
     [field: SerializeField] public NoiseTextureRender TextureRender{get; set;}
+
+    /// <summary>
+    /// Size of samples 
+    /// </summary>
     [field: SerializeField] public Vector2Int NoiseSampleSize { get; set;}
+
+    /// <summary>
+    /// The skybox to render to
+    /// </summary>
     private Texture2D skyTexture;
 
     void Start(){
@@ -19,6 +49,9 @@ public class CloudGenerator : MonoBehaviour
         GenerateClouds();
     }
 
+    /// <summary>
+    /// Generates clouds based on the wind direction, applies the colours and writes to the skytexture
+    /// </summary>
     private void GenerateClouds(){
         Vector2Int offsets = new Vector2Int((int)(WindDirection.x * WindSpeed.x), (int) (WindDirection.y * WindDirection.y));
         noiseGenerator.XOffset = offsets.x;
@@ -42,6 +75,10 @@ public class CloudGenerator : MonoBehaviour
         return samples;
     }
 
+    /// <summary>
+    /// Write to the skytexture
+    /// </summary>
+    /// <param name="colors">array of colour pixels to write to the skyTexture</param>
     private void WriteToSkybox(Color[] colors)
     {
         var skybox = RenderSettings.skybox;
@@ -58,6 +95,10 @@ public class CloudGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set noise settings from main menu
+    /// </summary>
+    /// <param name="noiseSettings">noise settings from main menu</param>
     public void SetSettings(NoiseSettings noiseSettings)
     {
         GameObject cloudGen;

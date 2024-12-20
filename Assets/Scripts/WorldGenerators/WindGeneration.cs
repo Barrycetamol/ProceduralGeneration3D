@@ -1,7 +1,9 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
+/// <summary>
+/// Class that handles wind generation
+/// </summary>
 public class WindGeneration : MonoBehaviour
 {
     [field: Header("Noise Generators")]
@@ -11,14 +13,17 @@ public class WindGeneration : MonoBehaviour
     [field: SerializeField] public NoiseGenerator WindStrengthYNoiseGenerator{get; set;}
 
     [field: Header("Wind properties")]
-    [field: SerializeField] public int WindSpeedMultiplier {get; set;} = 1;
+    [field: SerializeField] public int WindSpeedMultiplier {get; set;} = 1; // How fast the wind should move
 
     [field: Header("Output directions")]
-    
     [field: SerializeField] public Vector2 WindSpeed {get; set;}
     [field: SerializeField] public Vector2 WindDirection {get; set;}
-    [field: SerializeField] public Vector2 WindTimeOffsets {get; set;}
     
+    /// <summary>
+    /// Samples the noise generator to obtain the current wind direction and strength
+    /// </summary>
+    /// <param name="position">The position in the world to get the wind at</param>
+    /// <returns>wind contained in a Wind struct</returns>
     public Wind GetWind(Vector2Int position)
     {
         var windspeedX = WindStrengthXNoiseGenerator.GetNoiseSample(position, false);
@@ -34,10 +39,16 @@ public class WindGeneration : MonoBehaviour
         return wind;
     }
 
+    /// <summary>
+    /// Sets randomwind change to occur
+    /// </summary>
     void Start(){
         InvokeRepeating("RandomWindChange", 0, 0.5f);
     }
 
+    /// <summary>
+    /// Sets a random wind change based on the WindSpeedMultiplier
+    /// </summary>
     void RandomWindChange(){
         var rand = UnityEngine.Random.Range(0, 2);
         if(rand == 0) WindSpeedMultiplier -= 1;
@@ -46,6 +57,13 @@ public class WindGeneration : MonoBehaviour
         WindSpeedMultiplier = Math.Clamp(WindSpeedMultiplier, -5, 5);
     }
 
+    /// <summary>
+    /// Stores the noise settings to the respective noise generator
+    /// </summary>
+    /// <param name="windDirX">noise settings from main menu</param>
+    /// <param name="windDirY">noise settings from main menu</param>
+    /// <param name="windStrX">noise settings from main menu</param>
+    /// <param name="windStrY">noise settings from main menu</param>
     public void SetNoiseSettings(NoiseSettings windDirX, NoiseSettings windDirY, NoiseSettings windStrX, NoiseSettings windStrY){
         GameObject directionX;
         if(windDirX.noiseType == NoiseType.PERLIN) directionX = GameObject.FindGameObjectWithTag("PerlinWindDirX");
@@ -70,6 +88,9 @@ public class WindGeneration : MonoBehaviour
     }
 }
 
+/// <summary>
+/// Defines wind paramters, Strength and direction
+/// </summary>
 public struct Wind{
     public Vector2 windStrength;
     public Vector2 windDirection;

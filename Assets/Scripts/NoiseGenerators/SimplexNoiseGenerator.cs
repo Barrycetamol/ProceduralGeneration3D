@@ -3,6 +3,9 @@
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Same implementation as perlin noise but with OpenSimplex. (This could do with a refactor)
+/// </summary>
 public class SimplexNoiseGenerator : NoiseGenerator
 {
     public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int gridMeshSize, bool useDeltaTime)

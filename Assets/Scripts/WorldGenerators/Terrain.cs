@@ -54,12 +54,31 @@ public class Terrain{
     /// </summary>
     public List<Color> ColorList {get; set;}
 
+    /// <summary>
+    /// The grid position within the grid size
+    /// </summary>
     public Vector2Int GridPosition {get; set;}
+
+    /// <summary>
+    /// The amount of grid pieces in the world
+    /// </summary>
     public Vector2Int GridSize {get; set;}
-    private GerstnerWaves GerstnerWaves{get; set;} = new GerstnerWaves();
+
     private bool IsWater{get; set;}
+
+    /// <summary>
+    /// The colors to apply to the terrain
+    /// </summary>
     private ColorTextureRenderer ColorBand {get; set;}
+
+    /// <summary>
+    /// the associated noise map with this grid position (intended to use for maps)
+    /// </summary>
     private float[] NoiseMapSamples{get; set;}
+
+    /// <summary>
+    /// Multiplier for mesh detail, squared scaling MeshDetailLevel of 2 gives 2 across the X and 2 across the Y axis
+    /// </summary>
     private int MeshDetailLevel{get; set;}
     public float MinimumHeight { get; private set; }
     public float MaximumHeight { get; private set; }
@@ -151,6 +170,10 @@ public class Terrain{
         Clear();
     }
 
+    /// <summary>
+    /// Sets vertices to the mesh and starts creation of triangles
+    /// </summary>
+    /// <param name="vertices"></param>
     public void SetVertices(Vector3[,] vertices){
         Vertices = vertices;
         for(int i = 0; i < Vertices.GetLength(1); i++){
@@ -163,7 +186,9 @@ public class Terrain{
         ColorList = GetColors(Vertices, GridSize, NoiseMapSamples, ColorBand, false);
     }
 
-
+    /// <summary>
+    /// creates triangles based on vertices stored in Vertices
+    /// </summary>
     private void CreateTriangles(){
         int height = Vertices.GetLength(0); 
         int width = Vertices.GetLength(1);
@@ -188,6 +213,15 @@ public class Terrain{
         }
     }
 
+    /// <summary>
+    /// Gets associated colours based on noise map, color bands and vertices provided
+    /// </summary>
+    /// <param name="Vertices">vertices to apply color to</param>
+    /// <param name="gridSize">resolution of current grid piece</param>
+    /// <param name="samples">noise map samples</param>
+    /// <param name="colorBands">colors to apply to vertices</param>
+    /// <param name="flat">should the color selection interpolate between colours or give a flat value</param>
+    /// <returns>List of generated colours based on vertices</returns>
     private List<Color> GetColors(Vector3[,] Vertices, Vector2Int gridSize, float[] samples, ColorTextureRenderer colorBands, bool flat)
     {
         List<Color> colors = new List<Color>();
@@ -196,14 +230,12 @@ public class Terrain{
         {
             for (int j = 0; j < Vertices.GetLength(0); j++)
             {
-                // fractional differences between current vertex and grid resolution
+                // fractional differences between current vertex and grid resolution  (if mesh detail is 2, then we have 2 points, so fractional distance would be a 0.5 offset)
                 float fractionalDistanceX = (i % MeshDetailLevel) / (float)MeshDetailLevel;
                 float fractionalDistanceY = (j % MeshDetailLevel) / (float)MeshDetailLevel;
 
-                // current noisemap element
                 int noiseMapX = i / MeshDetailLevel;
                 int noiseMapY = j / MeshDetailLevel;
-                // the next noiseMap element
                 int noiseMapX_Next = Mathf.Min(noiseMapX + 1, gridSize.x - 1);
                 int noiseMapY_Next = Mathf.Min(noiseMapY + 1, gridSize.y - 1);
 
@@ -213,7 +245,7 @@ public class Terrain{
                 float noiseSampleBottomRight = samples[noiseMapX * gridSize.y + noiseMapY_Next];
                 float noiseSampleTopRight = samples[noiseMapX_Next * gridSize.y + noiseMapY_Next];
 
-                // interpolate between the points
+                // combine samples
                 float noiseSampleBottom = Mathf.Lerp(noiseSampleBottomLeft, noiseSampleBottomRight, fractionalDistanceX);
                 float noiseSampleTop = Mathf.Lerp(noiseSampleTopLeft, noiseSampleTopRight, fractionalDistanceX);
                 float noiseSample = Mathf.Lerp(noiseSampleBottom, noiseSampleTop, fractionalDistanceY);
@@ -225,6 +257,10 @@ public class Terrain{
         return colors;
     }
 
+    /// <summary>
+    /// Setter
+    /// </summary>
+    /// <param name="samples"></param>
     public void SetNoiseMap(float[] samples)
     {
         NoiseMapSamples = samples;

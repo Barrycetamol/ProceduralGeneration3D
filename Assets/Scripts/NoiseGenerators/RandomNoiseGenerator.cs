@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Generates noise using Unity Rnadom
+/// </summary>
 public class RandomNoiseGenerator : NoiseGenerator
 {
     public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int sampleSize, bool useDeltaTime)

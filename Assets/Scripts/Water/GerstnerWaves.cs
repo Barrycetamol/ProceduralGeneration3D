@@ -1,8 +1,11 @@
 using UnityEngine;
 
+/// <summary>
+/// A gerstner waves handler class that pushes its calculated values off to the gersner shader
+/// </summary>
 public class GerstnerWaves : MonoBehaviour
 {
-    [field: SerializeField] public Vector4 WaveLength {get; set;} = new Vector4(2, 3, 8, 0);
+    [field: SerializeField] public Vector4 WaveLength {get; set;} = new Vector4(2, 3, 8, 0); 
     public int waveCount = 3;
 
     public Vector4 directionsX;
@@ -63,7 +66,7 @@ public class GerstnerWaves : MonoBehaviour
 
 
 
-
+        // Store initial values in shader
         Renderer renderer = GetComponent<Renderer>();
         rendererMaterial = new Material(Shader.Find("Custom/GerstnerWaves"));
         renderer.material = rendererMaterial;
@@ -74,9 +77,6 @@ public class GerstnerWaves : MonoBehaviour
         rendererMaterial.SetFloatArray("_Thresholds", thresholds);
         rendererMaterial.SetFloat("_BandCount", thresholds.Length);
         rendererMaterial.SetFloat("_Mode", 3);
-
-
-
 
         InvokeRepeating("UpdateWaveCalculation", 0f, WindUpdateFrequency);
     }
@@ -116,6 +116,10 @@ public class GerstnerWaves : MonoBehaviour
         rendererMaterial.SetVector("_WaveLength", WaveLength);
     }
 
+    /// <summary>
+    /// Calcualtes waves based on wind
+    /// </summary>
+    /// <param name="wind">wind sample</param>
     private void CalculateWaves(float wind)
     {
         wind = Mathf.Clamp(wind, -10f, 10f);
@@ -164,6 +168,10 @@ public class GerstnerWaves : MonoBehaviour
         ColorBand = colorBand;
     }
 
+    /// <summary>
+    /// Sets starting sea level
+    /// </summary>
+    /// <param name="vertex"></param>
     public void SetDefaultHeight(Vector3 vertex)
     {
         if(rendererMaterial) rendererMaterial.SetFloat("_StartingHeight", vertex.y);

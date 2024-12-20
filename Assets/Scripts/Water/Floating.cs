@@ -48,7 +48,7 @@ public class Floating : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(forwardSlope, waveNormal);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 2.0f);
 
-        // Lock Z so the boat doesnt flip. Not sure why this is the case but
+        // Lock Z so the boat doesnt flip. Not sure why it does flip but it does
         Vector3 lockedEuler = transform.rotation.eulerAngles;
         lockedEuler.z = 0; 
         transform.rotation = Quaternion.Euler(lockedEuler);
