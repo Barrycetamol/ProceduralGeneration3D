@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-
 /// <summary>
 /// perlin noise generator based off of: https://docs.unity3d.com/ScriptReference/Mathf.PerlinNoise.html
 /// </summary>
@@ -10,13 +9,7 @@ using UnityEngine;
 [Serializable]
 public class PerlinNoiseGenerator : NoiseGenerator
 {
-    [field: Header("Perlin specific")]
-    [field: SerializeField] public float Scale { get; set; }
-    [field: SerializeField] public int Octaves {get; set;}
-    [field: SerializeField] public float Lacunarity {get; set;}
-    [field: SerializeField] public float Persistance {get; set;}
-
-    public PerlinNoiseGenerator(int seed, float scale, int xOffset, int yOffset, float lacunarity, int octaves, float persistance)
+    public PerlinNoiseGenerator(int seed, float scale, int xOffset, int yOffset, float lacunarity, uint octaves, float persistance)
     {
         Seed = seed;
         XOffset = xOffset;

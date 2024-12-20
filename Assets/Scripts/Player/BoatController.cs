@@ -5,7 +5,7 @@ public class BoatController : MonoBehaviour
 {
     public WaveCollision waveCollision; // Reference to the wave system
     public float buoyancyOffset = 0.5f; // Height offset to keep the boat "floating"
-    public float moveSpeed = 10f;       // Forward/backward speed
+    public float moveSpeed = 50f;       // Forward/backward speed
     public float turnSpeed = 50f;       // Turning speed
     public float drag = 1f;             // Water drag
     public float angularDrag = 2f;      // Angular drag
@@ -13,8 +13,10 @@ public class BoatController : MonoBehaviour
     public float StartingHeight = 0.0f;
     public float tiltLimit = 30f;
     public float stabilizationForce = 10f;
+    public float stabilizationSpeed = 2.0f; // Rotation smoothing factor
 
     public GameObject focalPoint;
+    public GameObject[] buoyancyPoints;
 
     private Rigidbody rb;
 
@@ -46,37 +48,40 @@ public class BoatController : MonoBehaviour
     }
 
     void ApplyBuoyancy(float time)
-    {
-        if (waveCollision == null) return;
+        {
+            if (waveCollision == null || buoyancyPoints.Length != 4) return;
 
-        // Get the boat's current position
-        Vector3 position = rb.position;
+            Vector3[] points = new Vector3[4];
+            float[] heights = new float[4];
 
-        // Get the wave height at the boat's positio
+            // Collect positions and wave heights for all 4 points
+            for (int i = 0; i < buoyancyPoints.Length; i++)
+            {
+                points[i] = buoyancyPoints[i].transform.position;
+                heights[i] = waveCollision.GetWaveHeight(points[i], time);
+            }
 
-        // Sample wave heights evenly for slope calculations
-        float centerHeight = waveCollision.GetWaveHeight(position, time);
-        float heightFront = waveCollision.GetWaveHeight(position + transform.forward * sampleDistance, time);
-        float heightBack = waveCollision.GetWaveHeight(position - transform.forward * sampleDistance, time);
-        float heightRight = waveCollision.GetWaveHeight(position + transform.right * sampleDistance, time);
-        float heightLeft = waveCollision.GetWaveHeight(position - transform.right * sampleDistance, time);
+            // Calculate average buoyancy height
+            float averageHeight = (heights[0] + heights[1] + heights[2] + heights[3]) / 4.0f;
 
-        float targetY = StartingHeight + centerHeight + buoyancyOffset;
-        position.y = Mathf.Lerp(position.y, targetY, Time.fixedDeltaTime * 5.0f); // Smooth transition
-        rb.MovePosition(position);
+            // Adjust the boat's vertical position
+            Vector3 position = rb.position;
+            position.y = Mathf.Lerp(position.y, averageHeight + buoyancyOffset + StartingHeight, Time.fixedDeltaTime * 5.0f);
+            rb.MovePosition(position);
 
-        // Correctly calculate slopes
-        Vector3 forwardSlope = new Vector3(0, heightFront - heightBack, sampleDistance).normalized;
-        Vector3 rightSlope = new Vector3(sampleDistance, heightRight - heightLeft, 0).normalized;
+            // Calculate wave normal from sample points
+            Vector3 forwardSlope = new Vector3(0, heights[0] - heights[1], Vector3.Distance(points[0], points[1])).normalized;
+            Vector3 rightSlope = new Vector3(Vector3.Distance(points[2], points[3]), heights[3] - heights[2], 0).normalized;
 
-        // Calculate the wave normal
-        Vector3 waveNormal = Vector3.Cross(rightSlope, forwardSlope).normalized;
-        if (waveNormal.y < 0) waveNormal = -waveNormal; // Ensure upward normal
+            Vector3 waveNormal = Vector3.Cross(rightSlope, forwardSlope).normalized;
+            if (waveNormal.y < 0) waveNormal = -waveNormal; // Ensure upward normal
 
-        // Smoothly apply the rotation
-        Quaternion targetRotation = Quaternion.LookRotation(forwardSlope, waveNormal);
-        rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, Time.fixedDeltaTime));
-    }
+            // Calculate target rotation
+            Quaternion targetRotation = Quaternion.LookRotation(forwardSlope, waveNormal);
+
+            // Smoothly apply rotation
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, Time.fixedDeltaTime * stabilizationSpeed));
+        }
 
     void HandleMovement()
     {

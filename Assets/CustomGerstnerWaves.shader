@@ -2,14 +2,14 @@ Shader "Custom/GerstnerWaves"
 {
     Properties
     {
-        _BaseColor ("Base Color", Color) = (0.0, 0.4, 0.7, 1.0) // Soft blue for water
+        _BaseColor ("Base Color", Color) = (0.0, 0.4, 0.7, 1.0) // default blue incase the generation fials
         _WaveCount ("Wave Count", Float) = 3
         _WaveDirectionX ("Wave DirectionX", Vector) = (0.0, 0.0, 0.0, 0.0)
         _WaveDirectionY ("Wave DirectionX", Vector) = (0.0, 0.0, 0.0, 0.0)
         _WaveFrequencies ("Wave Frequencies", Vector) = (0.8, 0.5, 0.0, 0.0)
         _WaveAmplitudes ("Wave Amplitudes", Vector) = (0.2, 0.15, 0.1, 0.0)
         _WaveSpeeds ("Wave Speeds", Vector) = (0.5, 0.6, 0.4, 0.0)
-        _WaveLength ("Wave Length", Float) = 20.0
+        _WaveLength ("Wave Length", Vector) = (1.0, 1.0, 1.0, 1.0)
         _WindDirection ("Wind Direction", Vector) = (1.0, 0.5, 0.0, 0.0)
         _WindStrength ("Wind Strength", Float) = 0.2
         _StartingHeight("Starting Height", Float) = 1.0
@@ -47,7 +47,7 @@ Shader "Custom/GerstnerWaves"
             float4 _WaveFrequencies;
             float4 _WaveAmplitudes;
             float4 _WaveSpeeds;
-            float _WaveLength;
+            float4 _WaveLength;
             float4 _WindDirection;
             float _WindStrength;
             float _StartingHeight;
@@ -74,7 +74,7 @@ Shader "Custom/GerstnerWaves"
                     float frequency = _WaveFrequencies[i];
                     float speed = _WaveSpeeds[i];
 
-                    float k = 2.0 * UNITY_PI / _WaveLength;
+                    float k = 2.0 * UNITY_PI / _WaveLength[i];
                     float w = frequency * k;
 
                     float phase = w * _Time.y * speed;

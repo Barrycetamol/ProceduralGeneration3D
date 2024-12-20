@@ -1,25 +1,37 @@
 using UnityEngine;
-
+//chatgpt generated camera controller
 public class CameraController : MonoBehaviour
 {
-    public Transform boat;              // Reference to the boat
-    public Vector3 offset = new Vector3(0, 5, -5); // Offset position behind and above the boat
-    public float rotationSpeed = 5f;    // Speed to smoothly rotate with the boat
-    public float focusHeight = 5f;    // Speed to smoothly rotate with the boat
+    public Transform boat; // The boat or object to orbit around
+    public float distance = 10f; // Distance from the target
+    public float rotationSpeed = 5f; // Speed of rotation
+    public float minYAngle = -20f; // Minimum vertical angle
+    public float maxYAngle = 130f; // Maximum vertical angle
+
+    private float currentX = 0f; // Horizontal rotation angle
+    private float currentY = 30f; // Vertical rotation angle
 
     void LateUpdate()
     {
-        if (boat == null) return;
+        if (boat == null)
+        {
+            return;
+        }
 
-        // Set the camera's position relative to the boat
-        var pos = boat.position + boat.TransformDirection(offset);
-        pos.y = 12.75f + offset.y;
-        transform.position = pos;
+        // Check if the left mouse button is pressed
+        if (Input.GetMouseButton(0))
+        {
+            // Adjust rotation based on mouse movement
+            currentX += Input.GetAxis("Mouse X") * rotationSpeed;
+            currentY -= Input.GetAxis("Mouse Y") * rotationSpeed;
+        }
 
-        var direction = boat.position - transform.position;
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        // Calculate the new position and rotation of the camera
+        Quaternion rotation = Quaternion.Euler(currentY, currentX, 0);
+        Vector3 position = boat.position - (rotation * Vector3.forward * distance);
 
-        // Smoothly rotate the camera toward the target
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        // Apply the calculated position and rotation
+        transform.position = position;
+        transform.LookAt(boat);
     }
 }

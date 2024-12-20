@@ -10,15 +10,12 @@ public class WorldGenerator : MonoBehaviour
     [field: SerializeField] public Vector2Int GridResolution { get; set; }
     [field: SerializeField] public int MeshDetailLevel {get; set;}
     [field: SerializeField] public float MeshHeightMultiplyer;
-    [field: SerializeField] public bool AutoUpdate;
     [field: SerializeField] public float SeaLevel { get; private set; }
 
     [field: Header("Noise maps")]
     [field: SerializeField] public TerrainModifier HeightModifier;
     [field: SerializeField] public TerrainModifier ErosionModifier;
     [field: SerializeField] public TerrainModifier PeaksAndValleysModifier;
-    [field: SerializeField] public TerrainModifier CloudModifier;
-    [field: SerializeField] public TerrainModifier WindModifier;
     [field: SerializeField] public ColorTextureRenderer WaterColourBands {get; set;}
     [field: SerializeField] public ColorTextureRenderer LandColourBands { get; set; }
     [field: SerializeField] public ColorTextureRenderer CloudColourBands { get; set; }
@@ -38,34 +35,51 @@ public class WorldGenerator : MonoBehaviour
     [field: SerializeField] public Camera CameraToTrackPlayerWith {get; set;}
     private GameObject player;
 
+    [field: Header("World objects")]
+    [field: SerializeField] public GameObject ObjectContainer {get; set;}
+    [field: SerializeField] public GameObject LargeTree {get; set;}
+    [field: SerializeField] public GameObject SmallTree {get; set;}
+    private List<Vector3> Points {get; set;}
+
+
     
 
     private List<Terrain> Terrains { get; set; } = new List<Terrain>();
     private List<Terrain> WaterTerrains { get; set; } = new List<Terrain>();
     private float CalculatedSeaLevel = 0;
+    private float[,] FalloffMap;
 
+    public void SetNoiseValues(NoiseSettings height, NoiseSettings erosion, NoiseSettings PV){
+        GameObject heightGen;
+        GameObject erosionGen;
+        GameObject PVGen;
+        if(height.noiseType == NoiseType.PERLIN) heightGen = GameObject.FindGameObjectWithTag("PerlinHeight");
+        else heightGen = GameObject.FindGameObjectWithTag("SimplexHeight");
 
-    void Start()
-    {
-        if (AutoUpdate)
-        {
-            InvokeRepeating("StartGenerating", 1.0f, 4.0f);
-        }
-        else StartGenerating();
-    }
+        if(erosion.noiseType == NoiseType.PERLIN) erosionGen = GameObject.FindGameObjectWithTag("PerlinErosion");
+        else erosionGen = GameObject.FindGameObjectWithTag("SimplexErosion");
 
-    void Update(){
-        if(WaterTerrains.Count > 0){
+        if(PV.noiseType == NoiseType.PERLIN) PVGen = GameObject.FindGameObjectWithTag("PerlinPV");
+        else PVGen = GameObject.FindGameObjectWithTag("SimplexPV");
 
-        }
+        HeightModifier = heightGen.GetComponent<TerrainModifier>();
+        heightGen.GetComponent<NoiseGenerator>().SetSettings(height);
+
+        ErosionModifier = erosionGen.GetComponent<TerrainModifier>();
+        erosionGen.GetComponent<NoiseGenerator>().SetSettings(erosion);
+
+        PeaksAndValleysModifier = PVGen.GetComponent<TerrainModifier>();
+        PVGen.GetComponent<NoiseGenerator>().SetSettings(PV);
     }
 
     public void StartGenerating()
     {
+        FalloffMap = FalloffGenerator.GenerateFalloffMap(GridResolution.x);
         // Clamp for min size.
         GridResolution = new Vector2Int(Math.Clamp(GridResolution.x, 1, 4096), Math.Clamp(GridResolution.y, 1, 4096));
         GridSize = new Vector2Int(Math.Max(1, GridSize.x), Math.Max(1, GridSize.y));  // Ensure 1x1 square
 
+        // Clear any terrains
         foreach (Terrain terrain in Terrains)
         {
             Debug.Log($"Clearing terrain {terrain.m_Terrain.name}");
@@ -80,6 +94,11 @@ public class WorldGenerator : MonoBehaviour
 
         Terrains.Clear();
         WaterTerrains.Clear();
+        // Clear world objects
+        for(int i = 0; i < ObjectContainer.transform.childCount; i++){
+            Destroy(ObjectContainer.transform.GetChild(i).gameObject);
+        }
+        
 
         for (int i = 0; i < GridSize.x; i++)
         {
@@ -89,17 +108,20 @@ public class WorldGenerator : MonoBehaviour
             }
         }
         GenerateWorld();
-        PlacePlayer();
     }
 
-    private void PlacePlayer()
+    public void PlacePlayer()
     {
-        if(player != null) Destroy(player);
+        RemovePlayer();
         player = Instantiate(playerPrefab);
+        player.transform.position = new Vector3(20, 0, 20);
         player.GetComponent<BoatController>().StartingHeight = CalculatedSeaLevel;
         var a = CameraToTrackPlayerWith.GetComponent<CameraController>();
-        a.boat = player.GetComponent<BoatController>().focalPoint.transform;
+        a.boat = player.transform;
+    }
 
+    public void RemovePlayer(){
+        if(player != null) Destroy(player);
     }
 
     private void GenerateWorld()
@@ -186,6 +208,7 @@ public class WorldGenerator : MonoBehaviour
         {
             GenerateWater(waterTerrain, waterTerrainMaps[waterTerrain.m_Terrain.name]);
         }
+
     }
 
     private void GenerateWater(Terrain terrain, float[] vertices)
@@ -217,8 +240,37 @@ public class WorldGenerator : MonoBehaviour
         terrain.SetMinMaxHeights(0, 1);
         terrain.SetNoiseMap(samples.CombinedValues.noiseMap);
         terrain.SetVertices(GenerateLandVertices(terrain.GridPosition, terrain.GridSize, samples));
-
         terrain.Refresh();
+
+        AddObjects(samples);
+    }
+
+    private void AddObjects(NoiseMapInfo samples)
+    {
+        Points = PoissonDiscSampling.GeneratePoints(50, GridResolution, 20, new Vector2(0.3f, 0.7f), samples.CombinedValues.noiseMap, MeshHeightMultiplyer);
+        if(ObjectContainer) {
+            foreach (Vector3 point in Points)
+            {
+                Vector3 position = new Vector3(point.x, point.y, point.z);
+                var rand = UnityEngine.Random.Range(0,2);
+                GameObject spawnedObject;
+                if(rand == 0) spawnedObject = Instantiate(LargeTree, position, Quaternion.identity);
+                else spawnedObject = Instantiate(SmallTree, position, Quaternion.identity);
+
+                spawnedObject.transform.parent = ObjectContainer.transform;
+            }
+        }
+
+    }
+
+    private void OnDrawGizmos(){
+        if(Points != null){
+            if(Points.Count > 0){
+                PoissonDiscSampling.DrawGizmos(Points, 0.5f);
+        }
+        }
+       
+
     }
 
     private float[] NormalizeSamples(float[] combinedValues)
@@ -279,9 +331,10 @@ public class WorldGenerator : MonoBehaviour
         {
             for (int j = 0; j < gridSize.y; j++)
             {
-                combinedMap[i * gridSize.y + j] = PerformHeightCalculation(samples.heightSamples.noiseMap[i * gridSize.y + j],
-                                                                            samples.erosionSamples.noiseMap[i * gridSize.y + j],
-                                                                            samples.PVsamples.noiseMap[i * gridSize.y + j]);
+                var heightCalc = PerformHeightCalculation(samples.heightSamples.noiseMap[i * gridSize.y + j],
+                                                          samples.erosionSamples.noiseMap[i * gridSize.y + j],
+                                                          samples.PVsamples.noiseMap[i * gridSize.y + j]);
+                combinedMap[i * gridSize.y + j] = heightCalc - FalloffMap[i, j];
             }
         }
         return combinedMap;

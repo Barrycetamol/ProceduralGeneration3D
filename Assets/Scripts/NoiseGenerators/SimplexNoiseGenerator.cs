@@ -5,11 +5,6 @@ using UnityEngine;
 
 public class SimplexNoiseGenerator : NoiseGenerator
 {
-    [field: SerializeField] public uint Octaves {get; set;}
-    [field: SerializeField] public float Persistance { get; set; }
-    [field: SerializeField] public float Lacunarity { get; set; }
-    [field: SerializeField] public float Scale { get; set; }
-
     public override float[] GetNoiseSamples(Vector2Int offsets, Vector2Int gridMeshSize, bool useDeltaTime)
     {
         float[] pixels = new float[gridMeshSize.x *  gridMeshSize.y];

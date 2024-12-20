@@ -47,8 +47,8 @@ public class CloudGenerator : MonoBehaviour
         var skybox = RenderSettings.skybox;
         if(skybox){
             skyTexture.SetPixels(colors);
-            skyTexture.filterMode = FilterMode.Bilinear; // Optional: Improves quality
-            skyTexture.wrapMode = TextureWrapMode.Repeat; // Prevents artifacts at edges
+            skyTexture.filterMode = FilterMode.Bilinear;
+            skyTexture.wrapMode = TextureWrapMode.Mirror;
             skyTexture.Apply();
             skybox.SetTexture("_MainTex", skyTexture);
 
@@ -56,5 +56,14 @@ public class CloudGenerator : MonoBehaviour
             // byte[] bytes = skyTexture.EncodeToPNG();
             // System.IO.File.WriteAllBytes(Application.dataPath + "/GeneratedSky.png", bytes);
         }
+    }
+
+    public void SetSettings(NoiseSettings noiseSettings)
+    {
+        GameObject cloudGen;
+        if(noiseSettings.noiseType == NoiseType.PERLIN) cloudGen = GameObject.FindGameObjectWithTag("PerlinClouds");
+        else cloudGen = GameObject.FindGameObjectWithTag("SimplexClouds");
+
+        cloudGen.GetComponent<NoiseGenerator>().SetSettings(noiseSettings);
     }
 }

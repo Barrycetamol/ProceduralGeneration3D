@@ -29,7 +29,7 @@ public class WaveCollision : MonoBehaviour
             float frequency = GerstnerWaves.frequencies[i];
             float speed = GerstnerWaves.speeds[i];
 
-            float k = 2.0f * Mathf.PI / GerstnerWaves.WaveLength;
+            float k = 2.0f * Mathf.PI / GerstnerWaves.WaveLength[i];
             float w = frequency * k;
 
             float phase = w * time * speed;

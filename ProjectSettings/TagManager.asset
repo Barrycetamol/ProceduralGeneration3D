@@ -7,6 +7,23 @@ TagManager:
   - Land
   - Water
   - Wind
+  - SimplexHeight
+  - SimplexErosion
+  - SimplexPV
+  - SimplexClouds
+  - SimplexWindDirX
+  - SimplexWindDirY
+  - SimplexWindStrX
+  - PerlinHeight
+  - PerlinErosion
+  - PerlinPV
+  - PerlinClouds
+  - PerlinWindDirX
+  - PerlinWindDirY
+  - PerlinWindStrX
+  - Clouds
+  - PerlinWindStrY
+  - SimplexWindStrY
   layers:
   - Default
   - TransparentFX
